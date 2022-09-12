@@ -19,6 +19,9 @@
 
 from .resnet import resnet18 as default_resnet18
 from .resnet import resnet50 as default_resnet50
+from .sresnet import sresnet18_imagenet
+from .sresnet import sresnet50_imagenet
+from .sparsemodule import *
 
 
 def resnet18(method, *args, **kwargs):

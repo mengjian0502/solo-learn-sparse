@@ -26,12 +26,15 @@ import torch.nn.functional as F
 import numpy as np
 from solo.losses.byol import byol_loss_func
 from solo.methods.base import BaseMomentumMethod
+from solo.methods.pruner import AverageMeter
 from solo.utils.momentum import initialize_momentum_params
+from .pruner import ContrastiveMask, CosineDecay, ContrastiveRegMask, ContrastiveMMask, ContrastiveNM, ContrastiveMNM
 
 
 class BYOL(BaseMomentumMethod):
     def __init__(
         self,
+        args,
         proj_output_dim: int,
         proj_hidden_dim: int,
         pred_hidden_dim: int,
@@ -71,6 +74,17 @@ class BYOL(BaseMomentumMethod):
             nn.ReLU(),
             nn.Linear(pred_hidden_dim, proj_output_dim),
         )
+
+        # counter
+        self.total_iter = AverageMeter()
+        
+        # pruner
+        if self.extra_args["prune"]:
+            self.pr_decay = CosineDecay(self.extra_args["prune_rate"], T_max=self.extra_args["train_steps"]*self.max_epochs)
+            self.cnt = 0
+            self.mask = ContrastiveMMask(self.backbone, self.momentum_backbone, optimizer=self.optimizer, prune_rate=self.extra_args["prune_rate"], prune_rate_decay=self.pr_decay,
+                    args=args, train_steps=args.train_steps, slist=self.extra_args["slist"], Itertrain=True, momentum=self.extra_args["ema_momentum"])
+            self.mask.reg_masks(train=True)
 
     @staticmethod
     def add_model_specific_args(parent_parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -194,5 +208,34 @@ class BYOL(BaseMomentumMethod):
             "train_z_std": z_std,
         }
         self.log_dict(metrics, on_epoch=True, sync_dist=True)
+        self.prune_step()
 
         return neg_cos_sim + class_loss
+
+    def spars_enc_stats(self):
+        total_params = 0
+        spars_params = 0
+        for name, module in self.momentum_backbone.named_modules():
+            if hasattr(module, "mask"):
+                mask = module.mask
+                total_params += mask.numel()
+                spars_params += mask[mask.eq(0)].numel()
+        return total_params, spars_params
+
+    def prune_step(self):
+        self.total_iter.val += 1
+        
+        if self.extra_args["prune"]:
+            self.mask.step(self.cnt, self.total_iter.val)
+
+            total_param, spars_param = self.mask._param_stats()
+            sparsity = spars_param / total_param*100
+            metrics = {"sparsity": sparsity}
+            
+            self.log_dict(metrics, on_epoch=True, sync_dist=True)
+
+            if self.extra_args["sparse_enck"]:
+                total_param, spars_param = self.spars_enc_stats()
+                sparsity = spars_param / total_param*100
+                metrics = {"momentum sparsity": sparsity}
+                self.log_dict(metrics, on_epoch=True, sync_dist=True)

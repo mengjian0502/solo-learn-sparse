@@ -63,8 +63,6 @@ def main():
     if args.num_large_crops != 2:
         assert args.method in ["wmse", "mae"]
 
-    model = METHODS[args.method](**args.__dict__)
-    make_contiguous(model)
 
     # validation dataloader for when it is available
     if args.dataset == "custom" and (args.no_labels or args.val_data_path is None):
@@ -77,7 +75,7 @@ def main():
         else:
             val_data_format = args.data_format
 
-        _, val_loader = prepare_data_classification(
+        dummy_loader, val_loader = prepare_data_classification(
             args.dataset,
             train_data_path=args.train_data_path,
             val_data_path=args.val_data_path,
@@ -108,6 +106,7 @@ def main():
             encode_indexes_into_labels=args.encode_indexes_into_labels,
         )
         dali_datamodule.val_dataloader = lambda: val_loader
+        args.train_steps = len(dummy_loader)
     else:
         transform_kwargs = (
             args.transform_kwargs if args.unique_augs > 1 else [args.transform_kwargs]
@@ -132,6 +131,11 @@ def main():
         train_loader = prepare_dataloader(
             train_dataset, batch_size=args.batch_size, num_workers=args.num_workers
         )
+        args.train_steps = len(train_loader)
+    
+    
+    model = METHODS[args.method](args,**args.__dict__)
+    make_contiguous(model)
 
     # 1.7 will deprecate resume_from_checkpoint, but for the moment
     # the argument is the same, but we need to pass it as ckpt_path to trainer.fit

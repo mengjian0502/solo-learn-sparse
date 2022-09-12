@@ -21,7 +21,7 @@ import logging
 import math
 import os
 from typing import Dict, List, Optional, Tuple
-
+import argparse
 import numpy as np
 import torch
 import torch.distributed as dist
@@ -434,3 +434,13 @@ def remove_bias_and_norm_from_weight_decay(parameter_groups: List[Dict], weight_
             no_decay_group["params"] = no_decay_params
             out.append(no_decay_group)
     return out
+
+def str2bool(v):
+    if isinstance(v, bool):
+       return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')

@@ -1,3 +1,18 @@
+export CUDA_VISIBLE_DEVICES=0,1
+
+# prune
+prune=True
+crm=False
+momentum_mask=True
+sparse_enck=True
+prune_rate=0.0
+init_density=0.7
+final_density=0.2
+density_gap=0.3
+momentum=0.99
+update_frequency=4000
+
+
 python3 main_pretrain.py \
     --dataset imagenet \
     --backbone sresnet50 \
@@ -27,7 +42,8 @@ python3 main_pretrain.py \
     --gaussian_prob 1.0 0.1 \
     --solarization_prob 0.0 0.2 \
     --num_crops_per_aug 1 1 \
-    --name byol-resnet50-imagenet-100ep \
+    --name byol-resnet50-imagenet-100ep-i${init_density}-f${final_density}-d${density_gap}-m${momentum}-sparseGap \
+    --wandb \
     --entity jmeng15 \
     --project iclr2023_sparse_ssl \
     --save_checkpoint \
@@ -38,4 +54,17 @@ python3 main_pretrain.py \
     --pred_hidden_dim 4096 \
     --base_tau_momentum 0.99 \
     --final_tau_momentum 1.0 \
-    --momentum_classifier
+    --momentum_classifier \
+    --prune ${prune} \
+    --crm ${crm} \
+    --momentum_mask ${momentum_mask} \
+    --ema_momentum ${momentum} \
+    --sparse_enck ${sparse_enck} \
+    --prune-rate ${prune_rate} \
+    --init-density ${init_density} \
+    --final-density ${final_density} \
+    --init-prune-epoch 120 \
+    --final-prune-epoch 688 \
+    --density_gap ${density_gap} \
+    --update-frequency ${update_frequency} \
+    --slist ${final_density};

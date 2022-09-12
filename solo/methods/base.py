@@ -39,6 +39,8 @@ from solo.backbones import (
     poolformer_s36,
     resnet18,
     resnet50,
+    sresnet18_imagenet,
+    sresnet50_imagenet,
     swin_base,
     swin_large,
     swin_small,
@@ -53,7 +55,7 @@ from solo.backbones import (
 from solo.utils.knn import WeightedKNNClassifier
 from solo.utils.lars import LARS
 from solo.utils.metrics import accuracy_at_k, weighted_mean
-from solo.utils.misc import remove_bias_and_norm_from_weight_decay
+from solo.utils.misc import remove_bias_and_norm_from_weight_decay, str2bool
 from solo.utils.momentum import MomentumUpdater, initialize_momentum_params
 from torch.optim.lr_scheduler import MultiStepLR
 
@@ -71,6 +73,8 @@ class BaseMethod(pl.LightningModule):
     _BACKBONES = {
         "resnet18": resnet18,
         "resnet50": resnet50,
+        "sresnet18": sresnet18_imagenet,
+        "sresnet50": sresnet50_imagenet,
         "vit_tiny": vit_tiny,
         "vit_small": vit_small,
         "vit_base": vit_base,
@@ -254,8 +258,9 @@ class BaseMethod(pl.LightningModule):
                 )
                 self.backbone.maxpool = nn.Identity()
         else:
-            self.features_dim = self.backbone.num_features
-
+            self.backbone.fc = nn.Identity()
+            self.features_dim = self.backbone.inplanes
+        
         self.classifier = nn.Linear(self.features_dim, num_classes)
 
         if self.knn_eval:
@@ -337,6 +342,24 @@ class BaseMethod(pl.LightningModule):
 
         # disables channel last optimization
         parser.add_argument("--no_channel_last", action="store_true")
+
+        # prune and regrow
+        parser.add_argument('--multiplier', type=int, default=1, metavar='N', help='extend training time by multiplier times')    
+        parser.add_argument("--prune", type=str2bool, nargs='?', const=True, default=False, help="enable the pruning")
+        parser.add_argument("--crm", type=str2bool, nargs='?', const=True, default=False, help="enable contrastive regrow mask")
+        parser.add_argument("--momentum_mask", type=str2bool, nargs='?', const=True, default=False, help="enable the momentum pruning")
+        parser.add_argument('--ema_momentum', default=0.9, type=float, help='momentum of ema')
+        parser.add_argument("--sparse_enck", type=str2bool, nargs='?', const=True, default=False, help="enable the pruning")
+        parser.add_argument('--iter', dest='iter', action='store_true', help='iterative pruning scheme')
+        parser.add_argument('--init-prune-epoch', type=int, default=0, help='The pruning rate / death rate.')
+        parser.add_argument('--final-prune-epoch', type=int, default=110, help='The density of the overall sparse network.')
+        parser.add_argument('--prune-rate', type=float, default=0.50, help='The pruning rate / death rate for Zero-Cost Neuroregeneration.')
+        parser.add_argument('--init-density', type=float, default=0.50, help='Initial pruning rate')
+        parser.add_argument('--final-density', type=float, default=0.05, help='The density of the overall sparse network.')
+        parser.add_argument('--density_gap', type=float, default=0.0, help='Initial pruning rate')
+        parser.add_argument('--update-frequency', type=int, default=1000, metavar='N', help='how many iterations to train between mask update')
+        parser.add_argument('--slist', type=float, nargs='+', default=[0.5], help='density candidates (sparsity = 1-density)')
+
 
         return parent_parser
 
@@ -681,7 +704,8 @@ class BaseMomentumMethod(BaseMethod):
                 )
                 self.momentum_backbone.maxpool = nn.Identity()
         else:
-            self.features_dim = self.momentum_backbone.num_features
+            self.momentum_backbone.fc = nn.Identity()
+            self.features_dim = self.momentum_backbone.inplanes
 
         initialize_momentum_params(self.backbone, self.momentum_backbone)
 
