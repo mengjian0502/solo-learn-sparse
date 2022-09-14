@@ -68,6 +68,7 @@ class ContrastiveMask(Mask):
 
         print("[Online model] Sparsity after pruning at step [0] = {:3f}".format(online_spars*100))
         print("[Offline model] Sparsity after pruning at step [0] = {:3f}".format(offline_spars*100))
+        print("Pruner type = {}".format(self.name()))
 
     def collect_score(self):
         online_weight_abs = []

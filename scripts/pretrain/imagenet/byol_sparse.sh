@@ -1,11 +1,11 @@
-export CUDA_VISIBLE_DEVICES=0,1
+export CUDA_VISIBLE_DEVICES=1,2
 
 # prune
 prune=True
 crm=False
-momentum_mask=True
+momentum_mask=False
 sparse_enck=True
-prune_rate=0.0
+prune_rate=0.5
 init_density=0.7
 final_density=0.2
 density_gap=0.3
@@ -42,7 +42,7 @@ python3 main_pretrain.py \
     --gaussian_prob 1.0 0.1 \
     --solarization_prob 0.0 0.2 \
     --num_crops_per_aug 1 1 \
-    --name byol-resnet50-imagenet-100ep-i${init_density}-f${final_density}-d${density_gap}-m${momentum}-sparseGap \
+    --name byol-resnet50-imagenet-100ep-i${init_density}-f${final_density}-d${density_gap}-m${momentum}-momentum${momentum_mask} \
     --wandb \
     --entity jmeng15 \
     --project iclr2023_sparse_ssl \
@@ -63,8 +63,8 @@ python3 main_pretrain.py \
     --prune-rate ${prune_rate} \
     --init-density ${init_density} \
     --final-density ${final_density} \
-    --init-prune-epoch 120 \
-    --final-prune-epoch 688 \
+    --init-prune-epoch 1 \
+    --final-prune-epoch 68 \
     --density_gap ${density_gap} \
     --update-frequency ${update_frequency} \
     --slist ${final_density};
