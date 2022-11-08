@@ -47,7 +47,10 @@ def vit_base(patch_size=16, **kwargs):
     model_kwargs = dict(
         patch_size=patch_size, embed_dim=768, depth=12, num_heads=12, num_classes=0, **kwargs
     )
-    model = _create_vision_transformer("vit_base_patch16_224", pretrained=False, **model_kwargs)
+    try:
+        model = _create_vision_transformer("vit_base_patch16_224", pretrained=False, **model_kwargs)
+    except:
+        import pdb;pdb.set_trace()
     return model
 
 

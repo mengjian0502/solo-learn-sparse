@@ -70,6 +70,8 @@ def main():
         if cifar:
             backbone.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=2, bias=False)
             backbone.maxpool = nn.Identity()
+    # else:
+    #     backbone.fc = nn.Identity()
 
     assert (
         args.pretrained_feature_extractor.endswith(".ckpt")

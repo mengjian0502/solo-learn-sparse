@@ -1,8 +1,10 @@
+export CUDA_VISIBLE_DEVICES=2
+
 python3 main_pretrain.py \
     --dataset imagenet100 \
     --backbone vit_tiny \
-    --train_data_path /datasets/imagenet-100/train \
-    --val_data_path /datasets/imagenet-100/val \
+    --train_data_path /home/jmeng15/data/imagenet-100/train \
+    --val_data_path /home/jmeng15/data/imagenet-100/val \
     --max_epochs 400 \
     --devices 0,1 \
     --accelerator gpu \
@@ -27,7 +29,6 @@ python3 main_pretrain.py \
     --name vit_tiny-dino-400ep-imagenet100 \
     --project solo-learn \
     --entity unitn-mhug \
-    --wandb \
     --save_checkpoint \
     --auto_resume \
     --method dino \
