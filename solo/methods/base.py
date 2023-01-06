@@ -258,8 +258,7 @@ class BaseMethod(pl.LightningModule):
                 )
                 self.backbone.maxpool = nn.Identity()
         else:
-            self.backbone.fc = nn.Identity()
-            self.features_dim = self.backbone.inplanes
+            self.features_dim: int = self.backbone.num_features
         
         self.classifier = nn.Linear(self.features_dim, num_classes)
 
@@ -704,8 +703,7 @@ class BaseMomentumMethod(BaseMethod):
                 )
                 self.momentum_backbone.maxpool = nn.Identity()
         else:
-            self.momentum_backbone.fc = nn.Identity()
-            self.features_dim = self.momentum_backbone.inplanes
+            self.features_dim: int = self.backbone.num_features
 
         initialize_momentum_params(self.backbone, self.momentum_backbone)
 

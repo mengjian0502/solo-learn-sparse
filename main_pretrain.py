@@ -134,7 +134,7 @@ def main():
         args.train_steps = len(train_loader)
     
     
-    model = METHODS[args.method](args,**args.__dict__)
+    model = METHODS[args.method](args, **args.__dict__)
     make_contiguous(model)
 
     # 1.7 will deprecate resume_from_checkpoint, but for the moment

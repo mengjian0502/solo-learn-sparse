@@ -216,6 +216,9 @@ def prepare_datasets(
             download=download,
             transform=T_val,
         )
+    
+    elif dataset == "food101":
+        pass
 
     elif dataset in ["imagenet", "imagenet100", "custom"]:
         if data_format == "h5":

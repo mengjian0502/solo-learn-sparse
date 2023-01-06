@@ -1,8 +1,8 @@
 python3 main_pretrain.py \
     --dataset imagenet100 \
     --backbone resnet18 \
-    --train_data_path /datasets/imagenet-100/train \
-    --val_data_path /datasets/imagenet-100/val \
+    --train_data_path /home2/jmeng15/data/imagenet-100/train \
+    --val_data_path /home2/jmeng15/data/imagenet-100/val \
     --max_epochs 400 \
     --devices 0,1 \
     --accelerator gpu \
@@ -27,8 +27,8 @@ python3 main_pretrain.py \
     --gaussian_prob 1.0 0.1 \
     --solarization_prob 0.0 0.2 \
     --num_crops_per_aug 1 1 \
-    --name byol-400ep-imagenet100 \
-    --entity unitn-mhug \
+    --project patch-wise-contrastive \
+    --entity jmeng15 \
     --project solo-learn \
     --wandb \
     --save_checkpoint \

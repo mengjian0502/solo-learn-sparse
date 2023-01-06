@@ -1,12 +1,12 @@
-export CUDA_VISIBLE_DEVICES=2
+export CUDA_VISIBLE_DEVICES=1
 
-python3 main_pretrain.py \
+python main_pretrain.py \
     --dataset imagenet100 \
     --backbone vit_tiny \
-    --train_data_path /home/jmeng15/data/imagenet-100/train \
-    --val_data_path /home/jmeng15/data/imagenet-100/val \
+    --train_data_path /home2/jmeng15/data/imagenet-100/train \
+    --val_data_path /home2/jmeng15/data/imagenet-100/val \
     --max_epochs 400 \
-    --devices 0,1 \
+    --devices 0 \
     --accelerator gpu \
     --strategy ddp \
     --sync_batchnorm \
@@ -27,9 +27,10 @@ python3 main_pretrain.py \
     --solarization_prob 0.0 0.2 \
     --num_crops_per_aug 1 1 \
     --name vit_tiny-dino-400ep-imagenet100 \
-    --project solo-learn \
-    --entity unitn-mhug \
+    --project patch-wise-contrastive \
+    --entity jmeng15 \
     --save_checkpoint \
+    --wandb \
     --auto_resume \
     --method dino \
     --proj_output_dim 256 \
