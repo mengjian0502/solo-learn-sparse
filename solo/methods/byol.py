@@ -82,12 +82,20 @@ class BYOL(BaseMomentumMethod):
         if self.extra_args["prune"]:
             self.pr_decay = CosineDecay(self.extra_args["prune_rate"], T_max=self.extra_args["train_steps"]*self.max_epochs)
             self.cnt = 0
-            if self.extra_args["momentum_mask"]:
-                self.mask = ContrastiveMMask(self.backbone, self.momentum_backbone, optimizer=self.optimizer, prune_rate=self.extra_args["prune_rate"], prune_rate_decay=self.pr_decay,
-                        args=args, train_steps=args.train_steps, slist=self.extra_args["slist"], Itertrain=True, momentum=self.extra_args["ema_momentum"])
+            if self.extra_args["nm"]:
+                if self.extra_args["momentum_mask"]:
+                    self.mask = ContrastiveMNM(self.backbone, self.momentum_backbone, optimizer=self.optimizer, prune_rate=self.extra_args["prune_rate"], prune_rate_decay=self.pr_decay,
+                            args=args, train_steps=args.train_steps, slist=self.extra_args["slist"], Itertrain=True, N=self.extra_args["N"], M=self.extra_args["M"], momentum=self.extra_args["ema_momentum"])
+                else:
+                    self.mask = ContrastiveNM(self.backbone, self.momentum_backbone, optimizer=self.optimizer, prune_rate=self.extra_args["prune_rate"], prune_rate_decay=self.pr_decay,
+                            args=args, train_steps=args.train_steps, slist=self.extra_args["slist"], Itertrain=True, N=self.extra_args["N"], M=self.extra_args["M"])
             else:
-                self.mask = ContrastiveMask(self.backbone, self.momentum_backbone, optimizer=self.optimizer, prune_rate=self.extra_args["prune_rate"], prune_rate_decay=self.pr_decay,
-                        args=args, train_steps=args.train_steps, slist=self.extra_args["slist"], Itertrain=True)
+                if self.extra_args["momentum_mask"]:
+                    self.mask = ContrastiveMMask(self.backbone, self.momentum_backbone, optimizer=self.optimizer, prune_rate=self.extra_args["prune_rate"], prune_rate_decay=self.pr_decay,
+                            args=args, train_steps=args.train_steps, slist=self.extra_args["slist"], Itertrain=True, momentum=self.extra_args["ema_momentum"])
+                else:
+                    self.mask = ContrastiveMask(self.backbone, self.momentum_backbone, optimizer=self.optimizer, prune_rate=self.extra_args["prune_rate"], prune_rate_decay=self.pr_decay,
+                            args=args, train_steps=args.train_steps, slist=self.extra_args["slist"], Itertrain=True)
             self.mask.reg_masks(train=True)
 
     @staticmethod

@@ -1,10 +1,10 @@
-python3 main_pretrain.py \
+python main_pretrain.py \
     --dataset imagenet100 \
-    --backbone resnet18 \
-    --train_data_path /datasets/imagenet-100/train \
-    --val_data_path /datasets/imagenet-100/val \
+    --backbone mobilenetv1_2x \
+    --train_data_path /home/jmeng15/data/imagenet-100/train \
+    --val_data_path /home/jmeng15/data/imagenet-100/val \
     --max_epochs 400 \
-    --devices 0,1 \
+    --devices 0,2,3 \
     --accelerator gpu \
     --strategy ddp \
     --sync_batchnorm \
@@ -27,9 +27,9 @@ python3 main_pretrain.py \
     --gaussian_prob 1.0 0.1 \
     --solarization_prob 0.0 0.2 \
     --num_crops_per_aug 1 1 \
-    --name byol-400ep-imagenet100 \
-    --entity unitn-mhug \
-    --project solo-learn \
+    --name byol-400ep-imagenet100-mobilenetv1-1.25x \
+    --entity jmeng15 \
+    --project light-ssl \
     --wandb \
     --save_checkpoint \
     --auto_resume \

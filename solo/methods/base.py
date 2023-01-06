@@ -41,6 +41,10 @@ from solo.backbones import (
     resnet50,
     sresnet18_imagenet,
     sresnet50_imagenet,
+    mobilenet_v1,
+    mobilenetv1_2x,
+    mobilenet_v2,
+    mobilenetv2_2x,
     swin_base,
     swin_large,
     swin_small,
@@ -75,6 +79,10 @@ class BaseMethod(pl.LightningModule):
         "resnet50": resnet50,
         "sresnet18": sresnet18_imagenet,
         "sresnet50": sresnet50_imagenet,
+        "mobilenetv1": mobilenet_v1,
+        "mobilenetv1_2x": mobilenetv1_2x,
+        "mobilenetv2": mobilenet_v2,
+        "mobilenetv2_2x": mobilenetv2_2x,
         "vit_tiny": vit_tiny,
         "vit_small": vit_small,
         "vit_base": vit_base,
@@ -259,7 +267,7 @@ class BaseMethod(pl.LightningModule):
                 self.backbone.maxpool = nn.Identity()
         else:
             self.backbone.fc = nn.Identity()
-            self.features_dim = self.backbone.inplanes
+            self.features_dim = self.backbone.last_channel
         
         self.classifier = nn.Linear(self.features_dim, num_classes)
 
@@ -359,6 +367,10 @@ class BaseMethod(pl.LightningModule):
         parser.add_argument('--density_gap', type=float, default=0.0, help='Initial pruning rate')
         parser.add_argument('--update-frequency', type=int, default=1000, metavar='N', help='how many iterations to train between mask update')
         parser.add_argument('--slist', type=float, nargs='+', default=[0.5], help='density candidates (sparsity = 1-density)')
+        parser.add_argument("--nm", type=str2bool, nargs='?', const=True, default=False)
+        parser.add_argument('--M', type=int, default=4, metavar='N', help='Group size')    
+        parser.add_argument('--N', type=int, default=2, metavar='N', help='Group size')
+        parser.add_argument("--duomask", type=str2bool, nargs='?', const=True, default=False, help="Duo mask for SSL with shared encoders")
 
 
         return parent_parser
@@ -705,7 +717,7 @@ class BaseMomentumMethod(BaseMethod):
                 self.momentum_backbone.maxpool = nn.Identity()
         else:
             self.momentum_backbone.fc = nn.Identity()
-            self.features_dim = self.momentum_backbone.inplanes
+            self.features_dim: int = self.backbone.last_channel
 
         initialize_momentum_params(self.backbone, self.momentum_backbone)
 

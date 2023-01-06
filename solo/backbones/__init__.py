@@ -30,6 +30,8 @@ from .resnet import resnet18, resnet50, sresnet18_imagenet, sresnet50_imagenet, 
 from .swin import swin_tiny, swin_small, swin_base, swin_large
 from .vit import vit_tiny, vit_small, vit_base, vit_large
 from .wide_resnet import wide_resnet28w2, wide_resnet28w8
+from .mobilenetv2 import mobilenet_v2, mobilenetv2_2x
+from .mobilenetv1 import mobilenet_v1, mobilenetv1_2x
 
 __all__ = [
     "resnet18",
