@@ -1,8 +1,8 @@
 python3 main_pretrain.py \
     --dataset imagenet \
     --backbone sresnet50 \
-    --train_data_path /home/zwang586/imagenet/train \
-    --val_data_path /home/jmeng15/data/val/ \
+    --train_data_path /home2/jmeng15/data/imagenet-100/train \
+    --val_data_path /home2/jmeng15/data/imagenet-100/val \
     --max_epochs 100 \
     --devices 0 \
     --accelerator gpu \

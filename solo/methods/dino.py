@@ -115,6 +115,7 @@ class DINOHead(nn.Module):
 class DINO(BaseMomentumMethod):
     def __init__(
         self,
+        args,
         proj_hidden_dim: int,
         proj_output_dim: int,
         num_prototypes: int,

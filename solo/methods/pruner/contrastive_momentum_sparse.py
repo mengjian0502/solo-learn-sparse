@@ -78,10 +78,10 @@ class ContrastiveMMask(ContrastiveMask):
                 self.pruning(prune_step, bidx)
                 self.prune_and_regrow(bidx)
 
-            # compute the overlap of consecutive epochs
-            self.online_overlap = self.overlap(self.masks, self.online_buffer)
-            self.offline_overlap = self.overlap(self.offline_masks, self.offline_buffer)
-            self.regrow = self.regrow_overlap()
+            # # compute the overlap of consecutive epochs
+            # self.online_overlap = self.overlap(self.masks, self.online_buffer)
+            # self.offline_overlap = self.overlap(self.offline_masks, self.offline_buffer)
+            # self.regrow = self.regrow_overlap()
         
             # fetch the new mask
             self._latch_mask()

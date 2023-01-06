@@ -1,14 +1,14 @@
-export CUDA_VISIBLE_DEVICES=1,2
+export CUDA_VISIBLE_DEVICES=0,1
 
 # prune
 prune=True
 crm=False
-momentum_mask=False
+momentum_mask=True
 sparse_enck=True
-prune_rate=0.5
-init_density=0.7
-final_density=0.2
-density_gap=0.3
+prune_rate=0.0
+init_density=1.0
+final_density=1.0
+density_gap=0.0
 momentum=0.99
 update_frequency=4000
 
@@ -18,8 +18,8 @@ python3 main_pretrain.py \
     --backbone sresnet50 \
     --train_data_path /home/zwang586/imagenet/train \
     --val_data_path /home/jmeng15/data/val/ \
-    --max_epochs 100 \
-    --devices 0 \
+    --max_epochs 200 \
+    --devices 0 1 \
     --accelerator gpu \
     --strategy ddp \
     --sync_batchnorm \
@@ -42,7 +42,7 @@ python3 main_pretrain.py \
     --gaussian_prob 1.0 0.1 \
     --solarization_prob 0.0 0.2 \
     --num_crops_per_aug 1 1 \
-    --name byol-resnet50-imagenet-100ep-i${init_density}-f${final_density}-d${density_gap}-m${momentum}-momentum${momentum_mask} \
+    --name byol-resnet50-imagenet-200ep-i${init_density}-f${final_density}-d${density_gap}-m${momentum}-momentum${momentum_mask}-baseline \
     --wandb \
     --entity jmeng15 \
     --project iclr2023_sparse_ssl \
@@ -63,8 +63,8 @@ python3 main_pretrain.py \
     --prune-rate ${prune_rate} \
     --init-density ${init_density} \
     --final-density ${final_density} \
-    --init-prune-epoch 1 \
-    --final-prune-epoch 68 \
+    --init-prune-epoch 60 \
+    --final-prune-epoch 138 \
     --density_gap ${density_gap} \
     --update-frequency ${update_frequency} \
     --slist ${final_density};
