@@ -102,7 +102,9 @@ class LinearModel(pl.LightningModule):
         if hasattr(self.backbone, "inplanes"):
             features_dim = self.backbone.inplanes
         else:
-            features_dim = self.backbone.num_features
+            features_dim = self.backbone.last_channel
+        
+        self.backbone.fc = nn.Identity()
         self.classifier = nn.Linear(features_dim, num_classes)  # type: ignore
 
         if loss_func is None:

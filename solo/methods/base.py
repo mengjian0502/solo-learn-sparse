@@ -270,7 +270,7 @@ class BaseMethod(pl.LightningModule):
             self.features_dim = self.backbone.last_channel
         
         self.classifier = nn.Linear(self.features_dim, num_classes)
-
+        print(self.backbone)
         if self.knn_eval:
             self.knn = WeightedKNNClassifier(k=self.knn_k, distance_fx="euclidean")
 
