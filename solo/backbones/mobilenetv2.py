@@ -133,5 +133,5 @@ def mobilenet_v2(method, *args, **kwargs):
 
 
 def mobilenetv2_2x(method, *args, **kwargs):
-    model = MobileNetV2(100, 224, width_mult=1.5)
+    model = MobileNetV2(100, 224, width_mult=2.0)
     return model

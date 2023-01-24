@@ -1,8 +1,8 @@
 python3 main_linear.py \
     --dataset imagenet100 \
-    --backbone resnet18 \
-    --train_data_path /datasets/imagenet-100/train \
-    --val_data_path /datasets/imagenet-100/val \
+    --backbone mobilenetv2 \
+    --train_data_path /home2/jmeng15/data/imagenet-100/train \
+    --val_data_path /home2/jmeng15/data/imagenet-100/val \
     --max_epochs 100 \
     --devices 0 \
     --accelerator gpu \
@@ -15,10 +15,10 @@ python3 main_linear.py \
     --batch_size 256 \
     --num_workers 10 \
     --data_format dali \
-    --name simclr-imagenet100-linear-eval \
-    --pretrained_feature_extractor $1 \
-    --project solo-learn \
-    --entity unitn-mhug \
+    --name simclr-mobilenetv2-imagenet100-linear-eval \
+    --pretrained_feature_extractor /home2/jmeng15/solo-learn-sparse/trained_models/simclr/7bw6batz/simclr-400ep-imagenet100-mobilenetv2_1x-7bw6batz-ep=399.ckpt \
+    --entity jmeng15 \
+    --project light-ssl \
     --wandb \
     --save_checkpoint \
     --auto_resume

@@ -27,7 +27,7 @@ from solo.methods.base import BaseMethod
 
 
 class SimCLR(BaseMethod):
-    def __init__(self, proj_output_dim: int, proj_hidden_dim: int, temperature: float, **kwargs):
+    def __init__(self, args, proj_output_dim: int, proj_hidden_dim: int, temperature: float, **kwargs):
         """Implements SimCLR (https://arxiv.org/abs/2002.05709).
 
         Args:

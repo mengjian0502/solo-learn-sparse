@@ -1,10 +1,12 @@
+export CUDA_VISIBLE_DEVICES=1
+
 python3 main_pretrain.py \
     --dataset imagenet100 \
-    --backbone resnet18 \
-    --train_data_path /datasets/imagenet-100/train \
-    --val_data_path /datasets/imagenet-100/val \
+    --backbone mobilenetv2_2x \
+    --train_data_path /home2/jmeng15/data/imagenet-100/train \
+    --val_data_path /home2/jmeng15/data/imagenet-100/val \
     --max_epochs 400 \
-    --devices 0,1 \
+    --devices 0 \
     --accelerator gpu \
     --strategy ddp \
     --sync_batchnorm \
@@ -23,10 +25,10 @@ python3 main_pretrain.py \
     --saturation 0.8 \
     --hue 0.2 \
     --num_crops_per_aug 2 \
-    --name simclr-400ep-imagenet100 \
+    --name simclr-400ep-imagenet100-mobilenetv2_2x \
     --data_format dali \
-    --project solo-learn \
-    --entity unitn-mhug \
+    --entity jmeng15 \
+    --project light-ssl \
     --wandb \
     --save_checkpoint \
     --method simclr \
