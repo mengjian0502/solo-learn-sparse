@@ -1,27 +1,23 @@
-export CUDA_VISIBLE_DEVICES=2
-dataset=cifar10
-
 python3 main_linear.py \
     --dataset cifar10 \
     --backbone resnet20_2x \
     --train_data_path ./datasets \
     --val_data_path ./datasets \
     --max_epochs 100 \
-    --devices 0 \
+    --devices 2 \
     --accelerator gpu \
     --precision 16 \
     --optimizer sgd \
     --scheduler step \
-    --lr 0.3 \
-    --patch_size 8 \
+    --lr 0.1 \
     --lr_decay_steps 60 80 \
     --weight_decay 0 \
-    --batch_size 64 \
-    --num_workers 4 \
-    --pretrained_feature_extractor /home/jmeng15/solo-learn-sparse/trained_models/dino/2a49a0ws/dino-cifar10-vit-baseline-2a49a0ws-ep=999.ckpt \
-    --name dino-${dataset}-vit-baseline \
+    --batch_size 128 \
+    --num_workers 10 \
+    --pretrained_feature_extractor /home/jmeng15/solo-learn-sparse/trained_models/byol/1jpikar7/byol-1000ep-cifar10-resnet20-6x-1jpikar7-ep=999.ckpt \
+    --name byol-1000ep-cifar10-resnet20-6x-linear \
     --entity jmeng15 \
-    --project iclr2023_sparse_ssl \
+    --project light-ssl \
     --wandb \
     --save_checkpoint \
     --auto_resume

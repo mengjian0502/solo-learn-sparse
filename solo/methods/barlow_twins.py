@@ -28,7 +28,7 @@ from solo.methods.base import BaseMethod
 
 class BarlowTwins(BaseMethod):
     def __init__(
-        self, proj_hidden_dim: int, proj_output_dim: int, lamb: float, scale_loss: float, **kwargs
+        self, args, proj_hidden_dim: int, proj_output_dim: int, lamb: float, scale_loss: float, **kwargs
     ):
         """Implements Barlow Twins (https://arxiv.org/abs/2103.03230)
 

@@ -1,20 +1,22 @@
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+
 python3 main_pretrain.py \
     --dataset imagenet100 \
-    --backbone resnet18 \
-    --train_data_path /datasets/imagenet-100/train \
-    --val_data_path /datasets/imagenet-100/val \
+    --backbone mobilenetv2_2x \
+    --train_data_path /home/jmeng15/data/imagenet-100/train \
+    --val_data_path /home/jmeng15/data/imagenet-100/val \
     --max_epochs 400 \
-    --devices 0,1 \
+    --devices 0,1,2,3 \
     --accelerator gpu \
     --strategy ddp \
     --sync_batchnorm \
     --precision 16 \
     --optimizer sgd \
     --scheduler warmup_cosine \
-    --lr 0.3 \
-    --classifier_lr 0.3 \
+    --lr 0.2 \
+    --classifier_lr 0.2 \
     --weight_decay 1e-4 \
-    --batch_size 128 \
+    --batch_size 64 \
     --num_workers 4 \
     --data_format dali \
     --brightness 0.4 \
@@ -22,9 +24,9 @@ python3 main_pretrain.py \
     --saturation 0.4 \
     --hue 0.1 \
     --num_crops_per_aug 2 \
-    --name mocov2plus-400ep \
-    --project solo-learn \
-    --entity unitn-mhug \
+    --name mocov2plus-400ep-mobilenetv2_1.25x \
+    --entity jmeng15 \
+    --project light-ssl \
     --save_checkpoint \
     --wandb \
     --method mocov2plus \

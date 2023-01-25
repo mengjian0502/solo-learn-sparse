@@ -1,10 +1,10 @@
 python3 main_pretrain.py \
-    --dataset $1 \
-    --backbone resnet18 \
+    --dataset cifar10 \
+    --backbone resnet20_2x \
     --train_data_path ./datasets \
     --val_data_path ./datasets \
     --max_epochs 1000 \
-    --devices 0 \
+    --devices 2 \
     --accelerator gpu \
     --precision 16 \
     --optimizer sgd \
@@ -21,9 +21,9 @@ python3 main_pretrain.py \
     --gaussian_prob 0.0 0.0 \
     --crop_size 32 \
     --num_crops_per_aug 1 1 \
-    --name mocov2plus-$1 \
-    --project solo-learn \
-    --entity unitn-mhug \
+    --name mocov2plus-1000ep-cifar10-resnet20-4x \
+    --entity jmeng15 \
+    --project light-ssl \
     --wandb \
     --save_checkpoint \
     --auto_resume \

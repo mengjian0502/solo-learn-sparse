@@ -34,6 +34,7 @@ class MoCoV2Plus(BaseMomentumMethod):
 
     def __init__(
         self,
+        args,
         proj_output_dim: int,
         proj_hidden_dim: int,
         temperature: float,
