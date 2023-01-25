@@ -1,6 +1,8 @@
+export CUDA_VISIBLE_DEVICES=1
+
 python3 main_pretrain.py \
     --dataset cifar10 \
-    --backbone resnet20_2x \
+    --backbone resnet20_4x \
     --train_data_path ./datasets \
     --val_data_path ./datasets \
     --max_epochs 1000 \

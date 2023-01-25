@@ -24,6 +24,7 @@ import torch
 import torch.nn as nn
 from solo.losses.barlow import barlow_loss_func
 from solo.methods.base import BaseMethod
+from solo.methods.lightssl import Slicer
 
 
 class BarlowTwins(BaseMethod):
@@ -54,6 +55,9 @@ class BarlowTwins(BaseMethod):
             nn.ReLU(),
             nn.Linear(proj_hidden_dim, proj_output_dim),
         )
+
+        # slicer
+        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, scale=0.25)
 
     @staticmethod
     def add_model_specific_args(parent_parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -107,13 +111,69 @@ class BarlowTwins(BaseMethod):
             torch.Tensor: total loss composed of Barlow loss and classification loss.
         """
 
-        out = super().training_step(batch, batch_idx)
-        class_loss = out["loss"]
-        z1, z2 = out["z"]
+        # out = super().training_step(batch, batch_idx)
+
+        _, X, targets = batch
+
+        X = [X] if isinstance(X, torch.Tensor) else X
+
+        # check that we received the desired number of crops
+        assert len(X) == self.num_crops
+
+        # outs = [self.base_training_step(x, targets) for x in X[: self.num_large_crops]]
+        
+        outs = []
+        for i, x in enumerate(X[: self.num_large_crops]):
+            out = self.base_training_step(x, targets)
+            if i == 0:
+                self.slicer.activate_mask()
+            else:
+                self.slicer.remove_mask()
+            outs.append(out)
+
+        outs = {k: [out[k] for out in outs] for k in outs[0].keys()}
+
+        if self.multicrop:
+            multicrop_outs = [self.multicrop_forward(x) for x in X[self.num_large_crops :]]
+            for k in multicrop_outs[0].keys():
+                outs[k] = outs.get(k, []) + [out[k] for out in multicrop_outs]
+
+        # loss and stats
+        outs["loss"] = sum(outs["loss"]) / self.num_large_crops
+        outs["acc1"] = sum(outs["acc1"]) / self.num_large_crops
+        outs["acc5"] = sum(outs["acc5"]) / self.num_large_crops
+
+        metrics = {
+            "train_class_loss": outs["loss"],
+            "train_acc1": outs["acc1"],
+            "train_acc5": outs["acc5"],
+        }
+
+        self.log_dict(metrics, on_epoch=True, sync_dist=True)
+
+        if self.knn_eval:
+            targets = targets.repeat(self.num_large_crops)
+            mask = targets != -1
+            self.knn(
+                train_features=torch.cat(outs["feats"][: self.num_large_crops])[mask].detach(),
+                train_targets=targets[mask],
+            )
+
+
+        class_loss = outs["loss"]
+        z1, z2 = outs["z"]
 
         # ------- barlow twins loss -------
         barlow_loss = barlow_loss_func(z1, z2, lamb=self.lamb, scale_loss=self.scale_loss)
 
         self.log("train_barlow_loss", barlow_loss, on_epoch=True, sync_dist=True)
+        self.prune_step()
 
         return barlow_loss + class_loss
+
+    def prune_step(self):
+        self.slicer.step()
+        s, _ = self.slicer.get_sparsity()
+        metrics = {"sparsity": s}
+
+        self.log_dict(metrics, on_epoch=True, sync_dist=True)

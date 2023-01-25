@@ -55,5 +55,5 @@ def mobilenet_v1(method, *args, **kwargs):
     return model
 
 def mobilenetv1_2x(method, *args, **kwargs):
-    model = Net(alpha=1.25)
+    model = Net(alpha=2.0)
     return model

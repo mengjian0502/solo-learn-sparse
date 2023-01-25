@@ -1,10 +1,12 @@
+export CUDA_VISIBLE_DEVICES=0
+
 python3 main_linear.py \
     --dataset cifar10 \
-    --backbone resnet20_2x \
+    --backbone resnet20_4x \
     --train_data_path ./datasets \
     --val_data_path ./datasets \
     --max_epochs 100 \
-    --devices 2 \
+    --devices 0 \
     --accelerator gpu \
     --precision 16 \
     --optimizer sgd \
@@ -14,8 +16,8 @@ python3 main_linear.py \
     --weight_decay 0 \
     --batch_size 128 \
     --num_workers 10 \
-    --pretrained_feature_extractor /home/jmeng15/solo-learn-sparse/trained_models/byol/1jpikar7/byol-1000ep-cifar10-resnet20-6x-1jpikar7-ep=999.ckpt \
-    --name byol-1000ep-cifar10-resnet20-6x-linear \
+    --pretrained_feature_extractor /home2/jmeng15/solo-learn-sparse/trained_models/barlow_twins/2hry7emc/barlow-1000ep-cifar10-resnet20-4x-2hry7emc-ep=999.ckpt \
+    --name barlow-1000ep-cifar10-resnet20-4x-linear \
     --entity jmeng15 \
     --project light-ssl \
     --wandb \

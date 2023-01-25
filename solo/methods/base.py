@@ -87,6 +87,10 @@ class BaseMethod(pl.LightningModule):
         "mobilenetv2_2x": mobilenetv2_2x,
         "resnet20": resnet20,
         "resnet20_2x": resnet20_2x,
+<<<<<<< HEAD
+=======
+        "resnet20_4x": resnet20_4x,
+>>>>>>> f43036b08d8a97674d75315edbb0bbb4673b1dc8
         "vit_tiny": vit_tiny,
         "vit_small": vit_small,
         "vit_base": vit_base,
@@ -274,7 +278,7 @@ class BaseMethod(pl.LightningModule):
             self.features_dim = self.backbone.last_channel
         
         self.classifier = nn.Linear(self.features_dim, num_classes)
-
+        print(self.backbone)
         if self.knn_eval:
             self.knn = WeightedKNNClassifier(k=self.knn_k, distance_fx="euclidean")
 

@@ -1,10 +1,12 @@
+export CUDA_VISIBLE_DEVICES=1
+
 python3 main_pretrain.py \
     --dataset imagenet100 \
-    --backbone resnet18 \
-    --train_data_path /datasets/imagenet-100/train \
-    --val_data_path /datasets/imagenet-100/val \
+    --backbone mobilenetv1_2x \
+    --train_data_path /home2/jmeng15/data/imagenet-100/train \
+    --val_data_path /home2/jmeng15/data/imagenet-100/val \
     --max_epochs 400 \
-    --devices 0,1 \
+    --devices 0 \
     --accelerator gpu \
     --strategy ddp \
     --sync_batchnorm \
@@ -26,9 +28,9 @@ python3 main_pretrain.py \
     --gaussian_prob 1.0 0.1 \
     --solarization_prob 0.0 0.2 \
     --num_crops_per_aug 1 1 \
-    --name barlow-400ep-imagenet100 \
-    --entity unitn-mhug \
-    --project solo-learn \
+    --name barlow-400ep-imagenet100-mobilenetv1-2x \
+    --entity jmeng15 \
+    --project light-ssl \
     --wandb \
     --save_checkpoint \
     --auto_resume \

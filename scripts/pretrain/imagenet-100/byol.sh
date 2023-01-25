@@ -1,10 +1,12 @@
+export CUDA_VISIBLE_DEVICES=0
+
 python main_pretrain.py \
     --dataset imagenet100 \
-    --backbone mobilenetv1_2x \
-    --train_data_path /home/jmeng15/data/imagenet-100/train \
-    --val_data_path /home/jmeng15/data/imagenet-100/val \
+    --backbone mobilenetv2_2x \
+    --train_data_path /home2/jmeng15/data/imagenet-100/train \
+    --val_data_path /home2/jmeng15/data/imagenet-100/val \
     --max_epochs 400 \
-    --devices 0,2,3 \
+    --devices 0 \
     --accelerator gpu \
     --strategy ddp \
     --sync_batchnorm \
@@ -27,7 +29,7 @@ python main_pretrain.py \
     --gaussian_prob 1.0 0.1 \
     --solarization_prob 0.0 0.2 \
     --num_crops_per_aug 1 1 \
-    --name byol-400ep-imagenet100-mobilenetv1-1.25x \
+    --name byol-400ep-imagenet100-mobilenetv2-2x \
     --entity jmeng15 \
     --project light-ssl \
     --wandb \
