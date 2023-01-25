@@ -4,6 +4,7 @@ ResNet on CIFAR10
 import torch
 import torch.nn as nn
 from torch.nn import init
+from .sparsemodule import SparsConv2d
 import math
 
 class DownsampleA(nn.Module):
@@ -27,11 +28,11 @@ class ResNetBasicblock(nn.Module):
     super(ResNetBasicblock, self).__init__()
 
 
-    self.conv_a = nn.Conv2d(inplanes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
+    self.conv_a = SparsConv2d(inplanes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
     self.bn_a = nn.BatchNorm2d(planes)
     self.relu1 = nn.ReLU(inplace=True)
 
-    self.conv_b = nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False)
+    self.conv_b = SparsConv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False)
     self.bn_b = nn.BatchNorm2d(planes)
     self.relu2 = nn.ReLU(inplace=True)
     self.downsample = downsample
@@ -74,7 +75,7 @@ class CifarResNet(nn.Module):
     self.inflate = inflate
     print ('CifarResNet : Depth : {} , Layers for each block : {}'.format(depth, layer_blocks))
     self.num_classes = num_classes
-    self.conv_1_3x3 = nn.Conv2d(3, 16*self.inflate, kernel_size=3, stride=1, padding=1, bias=False)
+    self.conv_1_3x3 = SparsConv2d(3, 16*self.inflate, kernel_size=3, stride=1, padding=1, bias=False)
     self.relu0 = nn.ReLU(inplace=True)
     self.bn_1 = nn.BatchNorm2d(16*self.inflate)
 

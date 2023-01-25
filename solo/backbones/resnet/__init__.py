@@ -21,6 +21,7 @@ from .resnet import resnet18 as default_resnet18
 from .resnet import resnet50 as default_resnet50
 from .sresnet import sresnet18_imagenet
 from .sresnet import sresnet50_imagenet
+from .cifar_resnet import resnet20, resnet20_2x, resnet20_4x
 from .sparsemodule import *
 
 

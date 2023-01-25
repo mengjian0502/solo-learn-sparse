@@ -1,4 +1,4 @@
-export CUDA_VISIBLE_DEVICES=1
+export CUDA_VISIBLE_DEVICES=0
 python3 main_pretrain.py \
     --dataset cifar10 \
     --backbone resnet20_4x \
@@ -25,7 +25,7 @@ python3 main_pretrain.py \
     --solarization_prob 0.0 0.2 \
     --crop_size 32 \
     --num_crops_per_aug 1 1 \
-    --name barlow-1000ep-cifar10-resnet20-4x \
+    --name barlow-1000ep-cifar10-resnet20-4x-1x-cl \
     --entity jmeng15 \
     --project light-ssl \
     --wandb \
