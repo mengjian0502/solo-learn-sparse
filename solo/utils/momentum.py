@@ -85,3 +85,21 @@ class MomentumUpdater:
             self.final_tau
             - (self.final_tau - self.base_tau) * (math.cos(math.pi * cur_step / max_steps) + 1) / 2
         )
+
+class SparseMomentumUpdater(MomentumUpdater):
+    def __init__(self, base_tau: float = 0.996, final_tau: float = 1):
+        super().__init__(base_tau, final_tau)
+    
+
+    @torch.no_grad()
+    def update(self, online_net: nn.Module, momentum_net: nn.Module):
+        """Performs the momentum update for each param group.
+
+        Args:
+            online_net (nn.Module): online network (e.g. online backbone, online projection, etc...).
+            momentum_net (nn.Module): momentum network (e.g. momentum backbone,
+                momentum projection, etc...).
+        """
+        for om, mm in zip(online_net.modules(), momentum_net.modules()):
+            if hasattr(om, "prune_flag"):
+                pass

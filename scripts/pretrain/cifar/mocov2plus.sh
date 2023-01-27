@@ -1,4 +1,4 @@
-export CUDA_VISIBLE_DEVICES=1
+export CUDA_VISIBLE_DEVICES=0
 
 python3 main_pretrain.py \
     --dataset cifar10 \
@@ -23,16 +23,18 @@ python3 main_pretrain.py \
     --gaussian_prob 0.0 0.0 \
     --crop_size 32 \
     --num_crops_per_aug 1 1 \
-    --name mocov2plus-1000ep-cifar10-resnet20-4x \
+    --name mocov2plus-1000ep-cifar10-resnet20-4x-2x-cl \
+    --width 0.5 \
     --entity jmeng15 \
     --project light-ssl \
     --wandb \
     --save_checkpoint \
-    --auto_resume \
     --method mocov2plus \
     --proj_hidden_dim 2048 \
     --queue_size 32768 \
     --temperature 0.2 \
+    --width 0.25 \
+    --interval 1000 \
     --base_tau_momentum 0.99 \
     --final_tau_momentum 0.999 \
     --momentum_classifier

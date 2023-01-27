@@ -7,7 +7,7 @@ import torch.nn as nn
 from torch import Tensor
 
 class Slicer(object):
-    def __init__(self, model:nn.Module, train_steps:float, scale:float=0.5):
+    def __init__(self, model:nn.Module, train_steps:float, interval:int, scale:float=0.5):
         self.model = model
         self.train_steps = train_steps
 
@@ -24,7 +24,7 @@ class Slicer(object):
         self.reg_masks()
         self.prune()
         self.apply_masks()
-        self.prune_every_k_steps = 1000
+        self.prune_every_k_steps = interval
 
         # sparsity
         s, nz = self.get_sparsity()

@@ -27,6 +27,7 @@ from solo.losses.mocov2plus import mocov2plus_loss_func
 from solo.methods.base import BaseMomentumMethod
 from solo.utils.momentum import initialize_momentum_params
 from solo.utils.misc import gather
+from solo.methods.lightssl import Slicer
 
 
 class MoCoV2Plus(BaseMomentumMethod):
@@ -75,6 +76,13 @@ class MoCoV2Plus(BaseMomentumMethod):
         self.queue = nn.functional.normalize(self.queue, dim=1)
         self.register_buffer("queue_ptr", torch.zeros(1, dtype=torch.long))
 
+        # slicer (momentum encoder)
+        self.slicer = Slicer(model=self.momentum_backbone, train_steps=args.train_steps, interval=args.interval, scale=args.width)
+        
+        for m in self.momentum_backbone.modules():
+            if hasattr(m, "prune_flag"):
+                m.prune_flag = True
+
     @staticmethod
     def add_model_specific_args(parent_parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         parent_parser = super(MoCoV2Plus, MoCoV2Plus).add_model_specific_args(parent_parser)
@@ -86,10 +94,9 @@ class MoCoV2Plus(BaseMomentumMethod):
 
         # parameters
         parser.add_argument("--temperature", type=float, default=0.1)
-
+        
         # queue settings
         parser.add_argument("--queue_size", default=65536, type=int)
-
         return parent_parser
 
     @property
@@ -196,5 +203,13 @@ class MoCoV2Plus(BaseMomentumMethod):
         self._dequeue_and_enqueue(keys)
 
         self.log("train_nce_loss", nce_loss, on_epoch=True, sync_dist=True)
+        self.prune_step()
 
         return nce_loss + class_loss
+
+    def prune_step(self):
+        self.slicer.step()
+        s, _ = self.slicer.get_sparsity()
+        metrics = {"sparsity": s}
+
+        self.log_dict(metrics, on_epoch=True, sync_dist=True)

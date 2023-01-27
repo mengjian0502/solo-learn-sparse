@@ -57,7 +57,7 @@ class BarlowTwins(BaseMethod):
         )
 
         # slicer
-        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, scale=0.25)
+        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=args.interval, scale=args.width)
 
     @staticmethod
     def add_model_specific_args(parent_parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -68,6 +68,7 @@ class BarlowTwins(BaseMethod):
         parser.add_argument("--proj_output_dim", type=int, default=2048)
         parser.add_argument("--proj_hidden_dim", type=int, default=2048)
 
+    
         # parameters
         parser.add_argument("--lamb", type=float, default=0.0051)
         parser.add_argument("--scale_loss", type=float, default=0.024)

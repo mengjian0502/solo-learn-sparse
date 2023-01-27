@@ -16,8 +16,8 @@ python3 main_linear.py \
     --weight_decay 0 \
     --batch_size 128 \
     --num_workers 10 \
-    --pretrained_feature_extractor /home2/jmeng15/solo-learn-sparse/trained_models/barlow_twins/2hry7emc/barlow-1000ep-cifar10-resnet20-4x-2hry7emc-ep=999.ckpt \
-    --name barlow-1000ep-cifar10-resnet20-4x-linear \
+    --pretrained_feature_extractor /home/mengjian/Desktop/ASU_research/solo-learn-sparse/trained_models/barlow_twins/205bev7m/barlow-1000ep-cifar10-resnet20-4x-1x-cl-205bev7m-ep=999.ckpt \
+    --name barlow-1000ep-cifar10-resnet20-4x-1x-cl-linear-unmasked \
     --entity jmeng15 \
     --project light-ssl \
     --wandb \
