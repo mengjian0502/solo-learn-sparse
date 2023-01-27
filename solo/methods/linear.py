@@ -99,6 +99,7 @@ class LinearModel(pl.LightningModule):
         super().__init__()
 
         self.backbone = backbone
+        self.backbone.fc = nn.Identity()
         if hasattr(self.backbone, "inplanes"):
             features_dim = self.backbone.inplanes
         else:

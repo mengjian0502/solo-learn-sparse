@@ -47,7 +47,6 @@ from solo.backbones import (
     mobilenetv2_2x,
     resnet20,
     resnet20_2x,
-    resnet20_4x,
     swin_base,
     swin_large,
     swin_small,
@@ -88,7 +87,10 @@ class BaseMethod(pl.LightningModule):
         "mobilenetv2_2x": mobilenetv2_2x,
         "resnet20": resnet20,
         "resnet20_2x": resnet20_2x,
+<<<<<<< HEAD
+=======
         "resnet20_4x": resnet20_4x,
+>>>>>>> f43036b08d8a97674d75315edbb0bbb4673b1dc8
         "vit_tiny": vit_tiny,
         "vit_small": vit_small,
         "vit_base": vit_base,

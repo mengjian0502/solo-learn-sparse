@@ -6,7 +6,7 @@ python3 main_pretrain.py \
     --train_data_path ./datasets \
     --val_data_path ./datasets \
     --max_epochs 1000 \
-    --devices 0 \
+    --devices 2 \
     --accelerator gpu \
     --precision 16 \
     --optimizer sgd \

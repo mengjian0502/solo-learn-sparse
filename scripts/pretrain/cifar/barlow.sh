@@ -5,7 +5,7 @@ python3 main_pretrain.py \
     --train_data_path ./datasets \
     --val_data_path ./datasets \
     --max_epochs 1000 \
-    --devices 0 \
+    --devices 1 \
     --accelerator gpu \
     --precision 16 \
     --num_workers 4 \

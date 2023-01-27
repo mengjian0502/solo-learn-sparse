@@ -3,7 +3,7 @@ dataset=cifar10
 
 python3 main_linear.py \
     --dataset cifar10 \
-    --backbone vit_base \
+    --backbone resnet20_2x \
     --train_data_path ./datasets \
     --val_data_path ./datasets \
     --max_epochs 100 \
