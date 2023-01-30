@@ -29,6 +29,7 @@ from solo.methods.base import BaseMomentumMethod
 from solo.methods.pruner import AverageMeter
 from solo.utils.momentum import initialize_momentum_params
 from .pruner import ContrastiveMask, CosineDecay, ContrastiveRegMask, ContrastiveMMask, ContrastiveNM, ContrastiveMNM
+from solo.methods.lightssl import Slicer
 
 
 class BYOL(BaseMomentumMethod):
@@ -78,25 +79,32 @@ class BYOL(BaseMomentumMethod):
         # counter
         self.total_iter = AverageMeter()
         
-        # pruner
-        if self.extra_args["prune"]:
-            self.pr_decay = CosineDecay(self.extra_args["prune_rate"], T_max=self.extra_args["train_steps"]*self.max_epochs)
-            self.cnt = 0
-            if self.extra_args["nm"]:
-                if self.extra_args["momentum_mask"]:
-                    self.mask = ContrastiveMNM(self.backbone, self.momentum_backbone, optimizer=self.optimizer, prune_rate=self.extra_args["prune_rate"], prune_rate_decay=self.pr_decay,
-                            args=args, train_steps=args.train_steps, slist=self.extra_args["slist"], Itertrain=True, N=self.extra_args["N"], M=self.extra_args["M"], momentum=self.extra_args["ema_momentum"])
-                else:
-                    self.mask = ContrastiveNM(self.backbone, self.momentum_backbone, optimizer=self.optimizer, prune_rate=self.extra_args["prune_rate"], prune_rate_decay=self.pr_decay,
-                            args=args, train_steps=args.train_steps, slist=self.extra_args["slist"], Itertrain=True, N=self.extra_args["N"], M=self.extra_args["M"])
-            else:
-                if self.extra_args["momentum_mask"]:
-                    self.mask = ContrastiveMMask(self.backbone, self.momentum_backbone, optimizer=self.optimizer, prune_rate=self.extra_args["prune_rate"], prune_rate_decay=self.pr_decay,
-                            args=args, train_steps=args.train_steps, slist=self.extra_args["slist"], Itertrain=True, momentum=self.extra_args["ema_momentum"])
-                else:
-                    self.mask = ContrastiveMask(self.backbone, self.momentum_backbone, optimizer=self.optimizer, prune_rate=self.extra_args["prune_rate"], prune_rate_decay=self.pr_decay,
-                            args=args, train_steps=args.train_steps, slist=self.extra_args["slist"], Itertrain=True)
-            self.mask.reg_masks(train=True)
+        # # pruner
+        # if self.extra_args["prune"]:
+        #     self.pr_decay = CosineDecay(self.extra_args["prune_rate"], T_max=self.extra_args["train_steps"]*self.max_epochs)
+        #     self.cnt = 0
+        #     if self.extra_args["nm"]:
+        #         if self.extra_args["momentum_mask"]:
+        #             self.mask = ContrastiveMNM(self.backbone, self.momentum_backbone, optimizer=self.optimizer, prune_rate=self.extra_args["prune_rate"], prune_rate_decay=self.pr_decay,
+        #                     args=args, train_steps=args.train_steps, slist=self.extra_args["slist"], Itertrain=True, N=self.extra_args["N"], M=self.extra_args["M"], momentum=self.extra_args["ema_momentum"])
+        #         else:
+        #             self.mask = ContrastiveNM(self.backbone, self.momentum_backbone, optimizer=self.optimizer, prune_rate=self.extra_args["prune_rate"], prune_rate_decay=self.pr_decay,
+        #                     args=args, train_steps=args.train_steps, slist=self.extra_args["slist"], Itertrain=True, N=self.extra_args["N"], M=self.extra_args["M"])
+        #     else:
+        #         if self.extra_args["momentum_mask"]:
+        #             self.mask = ContrastiveMMask(self.backbone, self.momentum_backbone, optimizer=self.optimizer, prune_rate=self.extra_args["prune_rate"], prune_rate_decay=self.pr_decay,
+        #                     args=args, train_steps=args.train_steps, slist=self.extra_args["slist"], Itertrain=True, momentum=self.extra_args["ema_momentum"])
+        #         else:
+        #             self.mask = ContrastiveMask(self.backbone, self.momentum_backbone, optimizer=self.optimizer, prune_rate=self.extra_args["prune_rate"], prune_rate_decay=self.pr_decay,
+        #                     args=args, train_steps=args.train_steps, slist=self.extra_args["slist"], Itertrain=True)
+        #     self.mask.reg_masks(train=True)
+
+        # slicer (momentum encoder)
+        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=self.extra_args["interval"], scale=self.extra_args["width"])
+        
+        for m in self.backbone.modules():
+            if hasattr(m, "prune_flag"):
+                m.prune_flag = True
 
     @staticmethod
     def add_model_specific_args(parent_parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -224,30 +232,38 @@ class BYOL(BaseMomentumMethod):
 
         return neg_cos_sim + class_loss
 
-    def spars_enc_stats(self):
-        total_params = 0
-        spars_params = 0
-        for name, module in self.momentum_backbone.named_modules():
-            if hasattr(module, "mask"):
-                mask = module.mask
-                total_params += mask.numel()
-                spars_params += mask[mask.eq(0)].numel()
-        return total_params, spars_params
-
     def prune_step(self):
-        self.total_iter.val += 1
+        self.slicer.step()
+        s, _ = self.slicer.get_sparsity()
+        metrics = {"sparsity": s}
+
+        self.log_dict(metrics, on_epoch=True, sync_dist=True)
+
+
+    # def spars_enc_stats(self):
+    #     total_params = 0
+    #     spars_params = 0
+    #     for name, module in self.momentum_backbone.named_modules():
+    #         if hasattr(module, "mask"):
+    #             mask = module.mask
+    #             total_params += mask.numel()
+    #             spars_params += mask[mask.eq(0)].numel()
+    #     return total_params, spars_params
+
+    # def prune_step(self):
+    #     self.total_iter.val += 1
         
-        if self.extra_args["prune"]:
-            self.mask.step(self.cnt, self.total_iter.val)
+    #     if self.extra_args["prune"]:
+    #         self.mask.step(self.cnt, self.total_iter.val)
 
-            total_param, spars_param = self.mask._param_stats()
-            sparsity = spars_param / total_param*100
-            metrics = {"sparsity": sparsity}
+    #         total_param, spars_param = self.mask._param_stats()
+    #         sparsity = spars_param / total_param*100
+    #         metrics = {"sparsity": sparsity}
             
-            self.log_dict(metrics, on_epoch=True, sync_dist=True)
+    #         self.log_dict(metrics, on_epoch=True, sync_dist=True)
 
-            if self.extra_args["sparse_enck"]:
-                total_param, spars_param = self.spars_enc_stats()
-                sparsity = spars_param / total_param*100
-                metrics = {"momentum sparsity": sparsity}
-                self.log_dict(metrics, on_epoch=True, sync_dist=True)
+    #         if self.extra_args["sparse_enck"]:
+    #             total_param, spars_param = self.spars_enc_stats()
+    #             sparsity = spars_param / total_param*100
+    #             metrics = {"momentum sparsity": sparsity}
+    #             self.log_dict(metrics, on_epoch=True, sync_dist=True)

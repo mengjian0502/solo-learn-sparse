@@ -1,6 +1,6 @@
 python3 main_pretrain.py \
     --dataset cifar10 \
-    --backbone resnet20_2x \
+    --backbone resnet20_4x \
     --train_data_path ./datasets \
     --val_data_path ./datasets \
     --max_epochs 1000 \
@@ -25,7 +25,9 @@ python3 main_pretrain.py \
     --solarization_prob 0.0 0.2 \
     --crop_size 32 \
     --num_crops_per_aug 1 1 \
-    --name byol-1000ep-cifar10-resnet20-4x \
+    --name byol-1000ep-cifar10-resnet20-4x-2x-cl-reversed \
+    --width 0.25 \
+    --interval 196 \
     --entity jmeng15 \
     --project light-ssl \
     --wandb \

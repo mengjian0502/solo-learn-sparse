@@ -28,7 +28,7 @@ from solo.losses.dino import DINOLoss
 from solo.methods.base import BaseMomentumMethod
 from solo.utils.momentum import initialize_momentum_params
 from solo.utils.misc import trunc_normal_
-
+from solo.methods.lightssl import Slicer
 
 class DINOHead(nn.Module):
     mlp: Any
@@ -181,6 +181,14 @@ class DINO(BaseMomentumMethod):
             warmup_teacher_temp_epochs=warmup_teacher_temperature_epochs,
             num_epochs=self.max_epochs,
         )
+
+        # slicer (momentum encoder)
+        self.slicer = Slicer(model=self.momentum_backbone, train_steps=args.train_steps, interval=self.extra_args["interval"], scale=self.extra_args["width"])
+
+        for m in self.momentum_backbone.modules():
+            if hasattr(m, "prune_flag"):
+                m.prune_flag = True
+        
 
     @staticmethod
     def add_model_specific_args(parent_parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
