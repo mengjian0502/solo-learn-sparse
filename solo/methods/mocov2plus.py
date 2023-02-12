@@ -77,9 +77,9 @@ class MoCoV2Plus(BaseMomentumMethod):
         self.register_buffer("queue_ptr", torch.zeros(1, dtype=torch.long))
 
         # slicer (momentum encoder)
-        self.slicer = Slicer(model=self.momentum_backbone, train_steps=args.train_steps, interval=args.interval, scale=args.width)
+        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=1000, scale=0.25)
         
-        for m in self.momentum_backbone.modules():
+        for m in self.backbone.modules():
             if hasattr(m, "prune_flag"):
                 m.prune_flag = True
 
@@ -185,10 +185,54 @@ class MoCoV2Plus(BaseMomentumMethod):
 
         """
 
-        out = super().training_step(batch, batch_idx)
-        class_loss = out["loss"]
-        q1, q2 = out["z"]
-        k1, k2 = out["momentum_z"]
+        # out = super().training_step(batch, batch_idx)
+        
+        # activate
+        self.slicer.activate_mask()
+        outs = super().training_step(batch, batch_idx)
+
+        _, X, targets = batch
+        X = [X] if isinstance(X, torch.Tensor) else X
+
+        # remove small crops
+        X = X[: self.num_large_crops]
+
+        # deactivate
+        self.slicer.remove_mask()
+        
+        momentum_outs = [self._shared_step_momentum(x, targets) for x in X]
+        momentum_outs = {
+            "momentum_" + k: [out[k] for out in momentum_outs] for k in momentum_outs[0].keys()
+        }
+
+        if self.momentum_classifier is not None:
+            # momentum loss and stats
+            momentum_outs["momentum_loss"] = (
+                sum(momentum_outs["momentum_loss"]) / self.num_large_crops
+            )
+            momentum_outs["momentum_acc1"] = (
+                sum(momentum_outs["momentum_acc1"]) / self.num_large_crops
+            )
+            momentum_outs["momentum_acc5"] = (
+                sum(momentum_outs["momentum_acc5"]) / self.num_large_crops
+            )
+
+            metrics = {
+                "train_momentum_class_loss": momentum_outs["momentum_loss"],
+                "train_momentum_acc1": momentum_outs["momentum_acc1"],
+                "train_momentum_acc5": momentum_outs["momentum_acc5"],
+            }
+            self.log_dict(metrics, on_epoch=True, sync_dist=True)
+
+            # adds the momentum classifier loss together with the general loss
+            outs["loss"] += momentum_outs["momentum_loss"]
+
+        outs.update(momentum_outs)
+
+
+        class_loss = outs["loss"]
+        q1, q2 = outs["z"]
+        k1, k2 = outs["momentum_z"]
 
         # ------- contrastive loss -------
         # symmetric

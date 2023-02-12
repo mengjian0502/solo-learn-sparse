@@ -119,6 +119,10 @@ def main():
     model = LinearModel(backbone, loss_func=loss_func, mixup_func=mixup_func, **args.__dict__)
     make_contiguous(model)
 
+    for m in model.modules():
+        if hasattr(m, "prune_flag"):
+            m.prune_flag = True
+
     if args.data_format == "dali":
         val_data_format = "image_folder"
     else:

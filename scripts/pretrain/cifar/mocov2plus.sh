@@ -6,7 +6,7 @@ python3 main_pretrain.py \
     --train_data_path ./datasets \
     --val_data_path ./datasets \
     --max_epochs 1000 \
-    --devices 2 \
+    --devices 0 \
     --accelerator gpu \
     --precision 16 \
     --optimizer sgd \
@@ -23,8 +23,8 @@ python3 main_pretrain.py \
     --gaussian_prob 0.0 0.0 \
     --crop_size 32 \
     --num_crops_per_aug 1 1 \
-    --name mocov2plus-1000ep-cifar10-resnet20-4x-2x-cl \
-    --width 0.5 \
+    --name mocov2plus-1000ep-cifar10-resnet20-4x-1x-cl-online-sparse \
+    --width 0.25 \
     --entity jmeng15 \
     --project light-ssl \
     --wandb \

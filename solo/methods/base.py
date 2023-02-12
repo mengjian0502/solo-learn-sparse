@@ -379,7 +379,7 @@ class BaseMethod(pl.LightningModule):
         parser.add_argument("--duomask", type=str2bool, nargs='?', const=True, default=False, help="Duo mask for SSL with shared encoders")
 
         # model slicer
-        parser.add_argument('--width', default=0.5, type=float, help='model width scaler')
+        parser.add_argument('--width', default=0.25, type=float, help='model width scaler')
         parser.add_argument('--interval', default=1000, type=float, help='mask update interval')
         return parent_parser
 

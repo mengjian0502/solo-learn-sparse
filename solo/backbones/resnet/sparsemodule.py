@@ -53,3 +53,44 @@ class SparsLinear(nn.Linear):
 
     def extra_repr(self):
         return super(SparsLinear, self).extra_repr() + ", nspars={}, uspars={}".format(self.nspars, self.uspars)
+
+class SparseBatchNorm2d(nn.BatchNorm2d):
+    def __init__(self, num_features: int, eps: float = 0.00001, momentum: float = 0.1, affine: bool = True, track_running_stats: bool = True, device=None, dtype=None):
+        super().__init__(num_features, eps, momentum, affine, track_running_stats, device, dtype)
+        self.prune_flag = False
+        self.register_buffer("mask", torch.ones_like(self.weight))
+    
+    def forward(self, input: Tensor) -> Tensor:
+        
+        if self.training and self.track_running_stats:
+            if self.num_batches_tracked is not None:
+                self.num_batches_tracked += 1
+
+        if self.training:
+            mean = input.mean([0, 2, 3])
+            var = input.var([0, 2, 3], unbiased=False)
+
+            n = input.numel() / input.size(1)
+            with torch.no_grad():
+                self.running_mean = self.momentum * mean + (1 - self.momentum) * self.running_mean
+                self.running_var = self.momentum * var * n/(n-1) + (1 - self.momentum) * self.running_var
+        
+        else:
+            mean = self.running_mean
+            var = self.running_var
+        
+        if self.prune_flag:
+            weight = self.weight.mul(self.mask)
+            bias = self.bias.mul(self.mask)
+        else:
+            weight = self.weight
+            bias = self.bias
+        
+        input = (input - mean[None, :, None, None]) / (torch.sqrt(var[None, :, None, None] + self.eps))
+        if self.affine:
+            input = input * weight[None, :, None, None] + bias[None, :, None, None]
+        return input
+
+
+
+

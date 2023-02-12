@@ -172,6 +172,10 @@ class BarlowTwins(BaseMethod):
 
         return barlow_loss + class_loss
 
+    def validation_step(self, batch: List[torch.Tensor], batch_idx: int, dataloader_idx: int = None):
+        self.slicer.activate_mask()
+        return super().validation_step(batch, batch_idx, dataloader_idx)
+
     def prune_step(self):
         self.slicer.step()
         s, _ = self.slicer.get_sparsity()

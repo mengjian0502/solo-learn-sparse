@@ -183,11 +183,9 @@ class DINO(BaseMomentumMethod):
         )
 
         # slicer (momentum encoder)
-        self.slicer = Slicer(model=self.momentum_backbone, train_steps=args.train_steps, interval=self.extra_args["interval"], scale=self.extra_args["width"])
+        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=self.extra_args["interval"], scale=self.extra_args["width"])
 
-        for m in self.momentum_backbone.modules():
-            if hasattr(m, "prune_flag"):
-                m.prune_flag = True
+        
         
 
     @staticmethod
@@ -306,7 +304,7 @@ class DINO(BaseMomentumMethod):
         dino_loss = self.dino_loss_func(p, momentum_p)
 
         self.log("dino_loss", dino_loss, on_epoch=True, sync_dist=True)
-
+        self.prune_step()
         return dino_loss + class_loss
 
     def on_after_backward(self):
@@ -319,3 +317,10 @@ class DINO(BaseMomentumMethod):
         if self.current_epoch < self.freeze_last_layer:
             for p in self.head.last_layer.parameters():
                 p.grad = None
+
+    def prune_step(self):
+        self.slicer.step()
+        s, _ = self.slicer.get_sparsity()
+        metrics = {"sparsity": s}
+
+        self.log_dict(metrics, on_epoch=True, sync_dist=True)

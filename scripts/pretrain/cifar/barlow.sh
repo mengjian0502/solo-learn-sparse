@@ -5,7 +5,7 @@ python3 main_pretrain.py \
     --train_data_path ./datasets \
     --val_data_path ./datasets \
     --max_epochs 1000 \
-    --devices 1 \
+    --devices 0 \
     --accelerator gpu \
     --precision 16 \
     --num_workers 4 \
@@ -25,12 +25,11 @@ python3 main_pretrain.py \
     --solarization_prob 0.0 0.2 \
     --crop_size 32 \
     --num_crops_per_aug 1 1 \
-    --name barlow-1000ep-cifar10-resnet20-4x-1x-cl \
+    --name barlow-1000ep-cifar10-resnet20-4x-1x-cl-sbn \
     --entity jmeng15 \
     --project light-ssl \
     --wandb \
     --save_checkpoint \
-    --auto_resume \
     --method barlow_twins \
     --proj_hidden_dim 2048 \
     --proj_output_dim 2048 \

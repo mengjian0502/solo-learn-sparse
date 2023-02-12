@@ -10,9 +10,11 @@ class Slicer(object):
     def __init__(self, model:nn.Module, train_steps:float, interval:int, scale:float=0.5):
         self.model = model
         self.train_steps = train_steps
+        self.prune_flag = False
 
         # masks
         self.masks = {}
+        self.bn_masks = []
 
         # ratio
         self.alpha = scale
@@ -28,7 +30,10 @@ class Slicer(object):
 
         # sparsity
         s, nz = self.get_sparsity()
-        print("Sparsity after intitialization: {:.2f}, Param: {:.2f}M".format(s, nz/1e+6))
+        print("\n#########################")
+        print("\nSparsity after intitialization: {:.2f}, Param: {:.2f}M".format(s, nz/1e+6))
+        print("Interval: {}; Slice ratio: {}\n".format(self.prune_every_k_steps, self.alpha))
+        print("#########################\n")
 
     def reg_masks(self):
         for n, m in self.model.named_modules():
@@ -75,7 +80,12 @@ class Slicer(object):
 
         return mask
 
+    def reduce(self, mask:Tensor):
+        assert len(mask.size()) == 4
+        return mask.mean([1,2,3])
+
     def prune(self):
+        nbn = 0
         for n, m in self.model.named_modules():
             if isinstance(m, nn.Conv2d) and hasattr(m, "mask"):
                 weight = m.weight.data
@@ -85,6 +95,14 @@ class Slicer(object):
                 
                 # update mask
                 self.masks[n] = mask_
+                
+                # bn mask
+                bnm = self.reduce(mask_)
+                self.bn_masks.append(bnm)
+            elif isinstance(m, nn.BatchNorm2d) and hasattr(m, "prune_flag"):
+                m.mask.data = self.bn_masks[nbn].cuda()
+                nbn += 1
+                
         
     def apply_masks(self):
         for n, m in self.model.named_modules():
@@ -94,20 +112,27 @@ class Slicer(object):
 
     def step(self):
         self.steps += 1
-        
-        if self.steps >= self.train_steps and self.steps % self.prune_every_k_steps == 0:
+
+        # if not self.prune_flag:
+        #     if self.steps > self.train_steps:
+        #         for m in self.model.modules():
+        #             if hasattr(m, "prune_flag"):
+        #                 m.prune_flag = True
+        #         self.prune_flag = True
+
+        if self.steps >= (self.train_steps) and self.steps % self.prune_every_k_steps == 0:
             print("Update mask @ Step {}".format(self.steps))
             self.prune()
             self.apply_masks()
 
     def remove_mask(self):
         for m in self.model.modules():
-            if isinstance(m, nn.Conv2d) and hasattr(m, "mask"):
+            if hasattr(m, "prune_flag"):
                 m.prune_flag = False
 
     def activate_mask(self):
         for m in self.model.modules():
-            if isinstance(m, nn.Conv2d) and hasattr(m, "mask"):
+            if hasattr(m, "prune_flag"):
                 m.prune_flag = True
 
     def get_sparsity(self):
