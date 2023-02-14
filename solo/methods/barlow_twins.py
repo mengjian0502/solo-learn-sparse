@@ -134,10 +134,11 @@ class BarlowTwins(BaseMethod):
 
         # mirrored outputs
         routs = []
-        for i, x in enumerate(X[::-(self.num_large_crops)]):
-            out = self.base_training_step(x, targets)
-            routs.append(out)
-
+        with torch.no_grad():
+            for i, x in enumerate(X[::-(self.num_large_crops)]):
+                out = self.base_training_step(x, targets)
+                routs.append(out)
+        
         outs = {k: [out[k] for out in outs] for k in outs[0].keys()}
         routs = {k: [rout[k] for rout in routs] for k in routs[0].keys()}
 
