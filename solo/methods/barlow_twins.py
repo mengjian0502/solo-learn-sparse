@@ -57,7 +57,7 @@ class BarlowTwins(BaseMethod):
         )
 
         # slicer
-        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=args.interval, scale=args.width)
+        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=2000, scale=args.width)
 
     @staticmethod
     def add_model_specific_args(parent_parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -132,7 +132,14 @@ class BarlowTwins(BaseMethod):
                 self.slicer.remove_mask()
             outs.append(out)
 
+        # mirrored outputs
+        routs = []
+        for i, x in enumerate(X[::-(self.num_large_crops)]):
+            out = self.base_training_step(x, targets)
+            routs.append(out)
+
         outs = {k: [out[k] for out in outs] for k in outs[0].keys()}
+        routs = {k: [rout[k] for rout in routs] for k in routs[0].keys()}
 
         if self.multicrop:
             multicrop_outs = [self.multicrop_forward(x) for x in X[self.num_large_crops :]]
@@ -163,14 +170,16 @@ class BarlowTwins(BaseMethod):
 
         class_loss = outs["loss"]
         z1, z2 = outs["z"]
+        zd, = routs["z"]
 
         # ------- barlow twins loss -------
         barlow_loss = barlow_loss_func(z1, z2, lamb=self.lamb, scale_loss=self.scale_loss)
+        distill_loss = barlow_loss_func(z2, zd, lamb=self.lamb, scale_loss=self.scale_loss)
 
         self.log("train_barlow_loss", barlow_loss, on_epoch=True, sync_dist=True)
         self.prune_step()
 
-        return barlow_loss + class_loss
+        return barlow_loss + class_loss + 1e-4*distill_loss
 
     def validation_step(self, batch: List[torch.Tensor], batch_idx: int, dataloader_idx: int = None):
         self.slicer.activate_mask()
