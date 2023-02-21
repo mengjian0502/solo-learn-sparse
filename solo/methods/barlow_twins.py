@@ -125,6 +125,11 @@ class BarlowTwins(BaseMethod):
         
         outs = []
         for i, x in enumerate(X[: self.num_large_crops]):
+            # switch
+            s = i % self.num_large_crops
+            self.backbone.switch(s)
+
+            # forward pass
             out = self.base_training_step(x, targets)
             if i == 0:
                 self.slicer.activate_mask()
@@ -180,7 +185,7 @@ class BarlowTwins(BaseMethod):
         self.log("train_barlow_loss", barlow_loss, on_epoch=True, sync_dist=True)
         self.prune_step()
 
-        return barlow_loss + class_loss + 1e-4*distill_loss
+        return barlow_loss + class_loss + 1e-5 * distill_loss
 
     def validation_step(self, batch: List[torch.Tensor], batch_idx: int, dataloader_idx: int = None):
         self.slicer.activate_mask()

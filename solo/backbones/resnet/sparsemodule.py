@@ -61,6 +61,6 @@ class SparseBatchNorm2d(nn.BatchNorm2d):
         self.register_buffer("mask", torch.ones_like(self.weight))
     
     def forward(self, input: Tensor) -> Tensor:       
-        return super().forward(input)
+        return super().forward(input)   
 
 

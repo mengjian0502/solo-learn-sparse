@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 from torch.nn import init
 from .sparsemodule import SparsConv2d, SparseBatchNorm2d
+from .sbn import SwitchBatchNorm2d
 import math
 
 class DownsampleA(nn.Module):
@@ -29,11 +30,11 @@ class ResNetBasicblock(nn.Module):
 
 
     self.conv_a = SparsConv2d(inplanes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
-    self.bn_a = SparseBatchNorm2d(planes)
+    self.bn_a = nn.BatchNorm2d(planes)
     self.relu1 = nn.ReLU(inplace=True)
 
     self.conv_b = SparsConv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False)
-    self.bn_b = SparseBatchNorm2d(planes)
+    self.bn_b = nn.BatchNorm2d(planes)
     self.relu2 = nn.ReLU(inplace=True)
     self.downsample = downsample
 
@@ -112,6 +113,11 @@ class CifarResNet(nn.Module):
     for i in range(1, blocks):
        layers.append(block(self.inplanes, planes))
     return nn.Sequential(*layers)
+  
+  def switch(self, n):
+    for m in self.modules():
+        if isinstance(m, (SwitchBatchNorm2d)):
+            m._switch(n)
 
   def forward(self, x):
     x = self.conv_1_3x3(x)
