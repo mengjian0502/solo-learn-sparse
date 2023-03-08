@@ -119,9 +119,14 @@ def main():
     model = LinearModel(backbone, loss_func=loss_func, mixup_func=mixup_func, **args.__dict__)
     make_contiguous(model)
 
+    nz = 0
+    total = 0
     for m in model.modules():
         if hasattr(m, "prune_flag"):
             m.prune_flag = True
+            nz += m.mask.sum().item()
+            total += m.mask.numel()
+    print("Sparsity = {:.2f}".format(1 - nz/total))
 
     if args.data_format == "dali":
         val_data_format = "image_folder"

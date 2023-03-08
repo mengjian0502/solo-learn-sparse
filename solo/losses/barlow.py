@@ -18,7 +18,7 @@
 # DEALINGS IN THE SOFTWARE.
 
 import torch
-
+import torch.nn.functional as F
 import torch.distributed as dist
 
 
@@ -57,4 +57,10 @@ def barlow_loss_func(
     cdif = (corr - diag).pow(2)
     cdif[~diag.bool()] *= lamb
     loss = scale_loss * cdif.sum()
+    return loss
+
+def distill_loss_func(
+    t: torch.Tensor, s: torch.Tensor   
+) -> torch.Tensor:
+    loss = torch.sum(-t * F.log_softmax(s, dim=-1), dim=-1)
     return loss

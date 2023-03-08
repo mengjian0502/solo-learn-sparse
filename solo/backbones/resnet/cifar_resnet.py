@@ -141,3 +141,11 @@ def resnet20_2x(method, *args, **kwargs):
 def resnet20_4x(method, *args, **kwargs):
     model = CifarResNet(depth=20, num_classes=10, inflate=4)
     return model
+
+def resnet20_6x(method, *args, **kwargs):
+    model = CifarResNet(depth=20, num_classes=10, inflate=6)
+    return model
+
+def resnet20_8x(method, *args, **kwargs):
+    model = CifarResNet(depth=20, num_classes=10, inflate=8)
+    return model

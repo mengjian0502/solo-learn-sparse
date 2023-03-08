@@ -22,7 +22,7 @@ from typing import Any, List, Sequence
 
 import torch
 import torch.nn as nn
-from solo.losses.barlow import barlow_loss_func
+from solo.losses.barlow import barlow_loss_func, distill_loss_func
 from solo.methods.base import BaseMethod
 from solo.methods.lightssl import Slicer
 
@@ -57,7 +57,7 @@ class BarlowTwins(BaseMethod):
         )
 
         # slicer
-        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=2000, scale=args.width)
+        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=1000, scale=0.167)
 
     @staticmethod
     def add_model_specific_args(parent_parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -140,8 +140,12 @@ class BarlowTwins(BaseMethod):
         # mirrored outputs
         routs = []
         with torch.no_grad():
-            for i, x in enumerate(X[::-(self.num_large_crops)]):
+            for i, x in enumerate(X[::-1]):
                 out = self.base_training_step(x, targets)
+                if i == 0:
+                    self.slicer.activate_mask()
+                else:
+                    self.slicer.remove_mask()
                 routs.append(out)
         
         outs = {k: [out[k] for out in outs] for k in outs[0].keys()}
@@ -175,17 +179,25 @@ class BarlowTwins(BaseMethod):
 
 
         class_loss = outs["loss"]
-        z1, z2 = outs["z"]
-        zd, = routs["z"]
+        z1, z2 = outs["z"]  # z1 is the output of the dense (teacher) from img1, z2 is the output of sparse (student) from img2
+        zd, zk = routs["z"] # zd is the output of dense (teacher) from img2, zk is the output of sparse (student) from img1
 
         # ------- barlow twins loss -------
-        barlow_loss = barlow_loss_func(z1, z2, lamb=self.lamb, scale_loss=self.scale_loss)
-        distill_loss = barlow_loss_func(z2, zd, lamb=self.lamb, scale_loss=self.scale_loss)
+        loss12 = barlow_loss_func(z1, z2, lamb=self.lamb, scale_loss=self.scale_loss)
+        loss21 = barlow_loss_func(zd, zk, lamb=self.lamb, scale_loss=self.scale_loss)
+        barlow_loss = (loss12 + loss21) / 2
+
+        # ------- symmetric distillation loss -------
+        # ds12 = distill_loss_func(t=z1, s=zk)
+        # ds21 = distill_loss_func(t=zd, s=z2)
+        # ds_loss = (ds12.mean() + ds21.mean()) / 2
+        ds12 = barlow_loss_func(z1, zk, lamb=self.lamb, scale_loss=self.scale_loss)
+        ds21 = barlow_loss_func(zd, z2, lamb=self.lamb, scale_loss=self.scale_loss)
+        ds_loss = (ds12 + ds21) / 2
 
         self.log("train_barlow_loss", barlow_loss, on_epoch=True, sync_dist=True)
         self.prune_step()
-
-        return barlow_loss + class_loss + 1e-5 * distill_loss
+        return barlow_loss + class_loss + 1e-4 * ds_loss
 
     def validation_step(self, batch: List[torch.Tensor], batch_idx: int, dataloader_idx: int = None):
         self.slicer.activate_mask()

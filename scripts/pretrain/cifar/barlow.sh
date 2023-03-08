@@ -1,7 +1,7 @@
 export CUDA_VISIBLE_DEVICES=0
 python3 main_pretrain.py \
     --dataset cifar10 \
-    --backbone resnet20_4x \
+    --backbone resnet20_6x \
     --train_data_path ./datasets \
     --val_data_path ./datasets \
     --max_epochs 1000 \
@@ -14,7 +14,7 @@ python3 main_pretrain.py \
     --eta_lars 0.02 \
     --exclude_bias_n_norm_lars \
     --scheduler warmup_cosine \
-    --lr 0.5 \
+    --lr 0.3 \
     --weight_decay 1e-4 \
     --batch_size 256 \
     --brightness 0.4 \
@@ -25,7 +25,7 @@ python3 main_pretrain.py \
     --solarization_prob 0.0 0.2 \
     --crop_size 32 \
     --num_crops_per_aug 1 1 \
-    --name barlow-1000ep-cifar10-resnet20-4x-1x-cl-offline-distll \
+    --name barlow-1000ep-cifar10-resnet20-6x-1x-cl-symm-distill-loss-1e-3 \
     --entity jmeng15 \
     --project light-ssl \
     --wandb \
