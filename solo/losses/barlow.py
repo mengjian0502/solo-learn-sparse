@@ -60,7 +60,15 @@ def barlow_loss_func(
     return loss
 
 def distill_loss_func(
-    t: torch.Tensor, s: torch.Tensor   
+    t: torch.Tensor, s: torch.Tensor, scale_loss: float = 0.025
 ) -> torch.Tensor:
+    N, D = t.size()
+
+    # normalize
+    bn = torch.nn.BatchNorm1d(D, affine=False).to(t.device)
+    t = bn(t)
+    s = bn(s)
+    
     loss = torch.sum(-t * F.log_softmax(s, dim=-1), dim=-1)
+    loss = scale_loss * loss.sum()
     return loss

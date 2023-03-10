@@ -187,17 +187,19 @@ class BarlowTwins(BaseMethod):
         loss21 = barlow_loss_func(zd, zk, lamb=self.lamb, scale_loss=self.scale_loss)
         barlow_loss = (loss12 + loss21) / 2
 
-        # ------- symmetric distillation loss -------
-        # ds12 = distill_loss_func(t=z1, s=zk)
-        # ds21 = distill_loss_func(t=zd, s=z2)
-        # ds_loss = (ds12.mean() + ds21.mean()) / 2
-        ds12 = barlow_loss_func(z1, zk, lamb=self.lamb, scale_loss=self.scale_loss)
-        ds21 = barlow_loss_func(zd, z2, lamb=self.lamb, scale_loss=self.scale_loss)
+        # ------- symmetric log distillation loss -------
+        ds12 = distill_loss_func(t=z1, s=zk, scale_loss=self.scale_loss)
+        ds21 = distill_loss_func(t=zd, s=z2, scale_loss=self.scale_loss)
         ds_loss = (ds12 + ds21) / 2
+
+        # ------- symmetric BT distillation loss -------
+        # ds12 = barlow_loss_func(z1, zk, lamb=self.lamb, scale_loss=self.scale_loss)
+        # ds21 = barlow_loss_func(zd, z2, lamb=self.lamb, scale_loss=self.scale_loss)
+        # ds_loss = (ds12 + ds21) / 2
 
         self.log("train_barlow_loss", barlow_loss, on_epoch=True, sync_dist=True)
         self.prune_step()
-        return barlow_loss + class_loss + 1e-4 * ds_loss
+        return barlow_loss + 1e-5 * ds_loss + class_loss
 
     def validation_step(self, batch: List[torch.Tensor], batch_idx: int, dataloader_idx: int = None):
         self.slicer.activate_mask()
