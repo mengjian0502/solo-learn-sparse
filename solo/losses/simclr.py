@@ -42,7 +42,6 @@ def simclr_loss_func(
     gathered_z = gather(z)
 
     sim = torch.exp(torch.einsum("if, jf -> ij", z, gathered_z) / temperature)
-
     gathered_indexes = gather(indexes)
 
     indexes = indexes.unsqueeze(0)

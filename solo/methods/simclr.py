@@ -141,6 +141,7 @@ class SimCLR(BaseMethod):
             else:
                 self.slicer.remove_mask()
             outs.append(out)
+        
 
         outs = {k: [out[k] for out in outs] for k in outs[0].keys()}
 

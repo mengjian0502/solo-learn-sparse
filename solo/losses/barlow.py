@@ -70,5 +70,5 @@ def distill_loss_func(
     s = bn(s)
     
     loss = torch.sum(-t * F.log_softmax(s, dim=-1), dim=-1)
-    loss = scale_loss * loss.sum()
+    loss = scale_loss * loss.mean()
     return loss

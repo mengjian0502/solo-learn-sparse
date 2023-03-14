@@ -57,7 +57,9 @@ class BarlowTwins(BaseMethod):
         )
 
         # slicer
-        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=1000, scale=0.167)
+        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=args.train_steps, scale=0.25)
+        import pdb;pdb.set_trace()
+        self.alpha = 0.95
 
     @staticmethod
     def add_model_specific_args(parent_parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -187,19 +189,23 @@ class BarlowTwins(BaseMethod):
         loss21 = barlow_loss_func(zd, zk, lamb=self.lamb, scale_loss=self.scale_loss)
         barlow_loss = (loss12 + loss21) / 2
 
-        # ------- symmetric log distillation loss -------
-        ds12 = distill_loss_func(t=z1, s=zk, scale_loss=self.scale_loss)
-        ds21 = distill_loss_func(t=zd, s=z2, scale_loss=self.scale_loss)
-        ds_loss = (ds12 + ds21) / 2
-
-        # ------- symmetric BT distillation loss -------
-        # ds12 = barlow_loss_func(z1, zk, lamb=self.lamb, scale_loss=self.scale_loss)
-        # ds21 = barlow_loss_func(zd, z2, lamb=self.lamb, scale_loss=self.scale_loss)
+        # # ------- symmetric log distillation loss -------
+        # ds12 = distill_loss_func(t=z1, s=zk, scale_loss=self.scale_loss)
+        # ds21 = distill_loss_func(t=zd, s=z2, scale_loss=self.scale_loss)
         # ds_loss = (ds12 + ds21) / 2
 
+        # ------- symmetric BT distillation loss -------
+        ds12 = barlow_loss_func(z1, zk, lamb=self.lamb, scale_loss=self.scale_loss)
+        ds21 = barlow_loss_func(zd, z2, lamb=self.lamb, scale_loss=self.scale_loss)
+        ds_loss = (ds12 + ds21) / 2
+
+        loss = self.alpha * barlow_loss + (1-self.alpha) * ds_loss
+
         self.log("train_barlow_loss", barlow_loss, on_epoch=True, sync_dist=True)
+        self.log("train_distill_loss", ds_loss, on_epoch=True, sync_dist=True)
+        
         self.prune_step()
-        return barlow_loss + 1e-5 * ds_loss + class_loss
+        return loss + class_loss
 
     def validation_step(self, batch: List[torch.Tensor], batch_idx: int, dataloader_idx: int = None):
         self.slicer.activate_mask()

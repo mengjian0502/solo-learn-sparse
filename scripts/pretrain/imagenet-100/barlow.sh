@@ -1,8 +1,8 @@
-export CUDA_VISIBLE_DEVICES=1
+export CUDA_VISIBLE_DEVICES=0
 
 python3 main_pretrain.py \
     --dataset imagenet100 \
-    --backbone mobilenetv1_2x \
+    --backbone mobilenetv1_4x \
     --train_data_path /home2/jmeng15/data/imagenet-100/train \
     --val_data_path /home2/jmeng15/data/imagenet-100/val \
     --max_epochs 400 \
@@ -31,7 +31,6 @@ python3 main_pretrain.py \
     --name barlow-400ep-imagenet100-mobilenetv1-2x \
     --entity jmeng15 \
     --project light-ssl \
-    --wandb \
     --save_checkpoint \
     --auto_resume \
     --scale_loss 0.1 \

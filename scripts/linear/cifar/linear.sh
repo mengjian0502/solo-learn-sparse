@@ -16,8 +16,8 @@ python3 main_linear.py \
     --weight_decay 0 \
     --batch_size 128 \
     --num_workers 10 \
-    --pretrained_feature_extractor /home/jmeng15/solo-learn-sparse/trained_models/barlow_twins/17vn864i/barlow-1000ep-cifar10-resnet20-6x-1x-cl-symm-distill-log-1e-3-loss-17vn864i-ep=999.ckpt \
-    --name barlow-1000ep-cifar10-resnet20-6x-1x-cl-symm-distill-log-1e-3-loss-linear \
+    --pretrained_feature_extractor /home/jmeng15/solo-learn-sparse/trained_models/barlow_twins/2k2jbybn/barlow-1000ep-cifar10-resnet20-6x-1x-cl-symm-distill-bt-alpha0.9-loss-2k2jbybn-ep=999.ckpt \
+    --name barlow-1000ep-cifar10-resnet20-6x-1x-cl-symm-distill-bt-alpha0.9-loss-linear \
     --entity jmeng15 \
     --project light-ssl \
     --wandb \
