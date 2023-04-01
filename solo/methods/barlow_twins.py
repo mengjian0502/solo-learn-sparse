@@ -57,9 +57,8 @@ class BarlowTwins(BaseMethod):
         )
 
         # slicer
-        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=args.train_steps, scale=0.25)
-        import pdb;pdb.set_trace()
-        self.alpha = 0.95
+        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=args.train_steps, scale=0.5)
+        self.alpha = 0.9
 
     @staticmethod
     def add_model_specific_args(parent_parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -127,10 +126,6 @@ class BarlowTwins(BaseMethod):
         
         outs = []
         for i, x in enumerate(X[: self.num_large_crops]):
-            # switch
-            s = i % self.num_large_crops
-            self.backbone.switch(s)
-
             # forward pass
             out = self.base_training_step(x, targets)
             if i == 0:
