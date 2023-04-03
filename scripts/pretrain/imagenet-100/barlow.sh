@@ -1,12 +1,12 @@
-export CUDA_VISIBLE_DEVICES=0,1,2,3
+export CUDA_VISIBLE_DEVICES=1,2
 
 python3 main_pretrain.py \
     --dataset imagenet100 \
-    --backbone mobilenetv1_2x \
+    --backbone mobilenetv1 \
     --train_data_path /home/jmeng15/data/imagenet-100/train \
     --val_data_path /home/jmeng15/data/imagenet-100/val \
     --max_epochs 400 \
-    --devices 0,1,2,3 \
+    --devices 0,1 \
     --accelerator gpu \
     --strategy ddp \
     --sync_batchnorm \
@@ -28,11 +28,11 @@ python3 main_pretrain.py \
     --gaussian_prob 1.0 0.1 \
     --solarization_prob 0.0 0.2 \
     --num_crops_per_aug 1 1 \
-    --name barlow-400ep-imagenet100-mobilenetv1-4x-1x-alpha0.9 \
+    --name barlow-400ep-imagenet100-mobilenetv1-2x-2x-alpha0.9 \
+    --wandb \
     --entity jmeng15 \
     --project light-ssl \
     --save_checkpoint \
-    --auto_resume \
     --scale_loss 0.1 \
     --method barlow_twins \
     --proj_hidden_dim 2048 \

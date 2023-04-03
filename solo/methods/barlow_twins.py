@@ -57,8 +57,9 @@ class BarlowTwins(BaseMethod):
         )
 
         # slicer
-        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=args.train_steps, scale=0.5)
-        self.alpha = 0.9
+        self.train_steps = args.train_steps
+        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=args.train_steps, scale=1.0)
+        self.alpha = 0.95
 
     @staticmethod
     def add_model_specific_args(parent_parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -126,12 +127,17 @@ class BarlowTwins(BaseMethod):
         
         outs = []
         for i, x in enumerate(X[: self.num_large_crops]):
+            # # switch
+            # s = i % self.num_large_crops
+            # self.backbone.switch(s)
+
             # forward pass
             out = self.base_training_step(x, targets)
-            if i == 0:
-                self.slicer.activate_mask()
-            else:
-                self.slicer.remove_mask()
+            if self.slicer.steps > 10 * self.train_steps:
+                if i == 0:
+                    self.slicer.activate_mask()
+                else:
+                    self.slicer.remove_mask()
             outs.append(out)
 
         # mirrored outputs
@@ -139,10 +145,11 @@ class BarlowTwins(BaseMethod):
         with torch.no_grad():
             for i, x in enumerate(X[::-1]):
                 out = self.base_training_step(x, targets)
-                if i == 0:
-                    self.slicer.activate_mask()
-                else:
-                    self.slicer.remove_mask()
+                if self.slicer.steps > 10 * self.train_steps:
+                    if i == 0:
+                        self.slicer.activate_mask()
+                    else:
+                        self.slicer.remove_mask()
                 routs.append(out)
         
         outs = {k: [out[k] for out in outs] for k in outs[0].keys()}
