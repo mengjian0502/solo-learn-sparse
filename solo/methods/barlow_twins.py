@@ -58,7 +58,7 @@ class BarlowTwins(BaseMethod):
 
         # slicer
         self.train_steps = args.train_steps
-        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=args.train_steps, scale=1.0)
+        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=4000, scale=0.5)
         self.alpha = 0.95
 
     @staticmethod
@@ -210,7 +210,8 @@ class BarlowTwins(BaseMethod):
         return loss + class_loss
 
     def validation_step(self, batch: List[torch.Tensor], batch_idx: int, dataloader_idx: int = None):
-        self.slicer.activate_mask()
+        if self.slicer.steps > 10 * self.train_steps:
+            self.slicer.activate_mask()
         return super().validation_step(batch, batch_idx, dataloader_idx)
 
     def prune_step(self):
