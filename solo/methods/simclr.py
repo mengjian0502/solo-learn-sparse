@@ -50,9 +50,9 @@ class SimCLR(BaseMethod):
         # slicer 
         self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=self.extra_args["interval"], scale=self.extra_args["width"])
         
-        for m in self.backbone.modules():
-            if hasattr(m, "prune_flag"):
-                m.prune_flag = True
+        # for m in self.backbone.modules():
+        #     if hasattr(m, "prune_flag"):
+        #         m.prune_flag = True
         
 
     @staticmethod

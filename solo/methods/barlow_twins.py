@@ -58,7 +58,7 @@ class BarlowTwins(BaseMethod):
 
         # slicer
         self.train_steps = args.train_steps
-        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=args.train_steps, scale=1.0)
+        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=args.train_steps, scale=0.167)
         self.alpha = 0.95
 
     @staticmethod

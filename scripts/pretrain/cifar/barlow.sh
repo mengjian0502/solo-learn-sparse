@@ -1,4 +1,4 @@
-export CUDA_VISIBLE_DEVICES=1
+export CUDA_VISIBLE_DEVICES=0
 python3 main_pretrain.py \
     --dataset cifar10 \
     --backbone resnet20_6x \
@@ -25,9 +25,10 @@ python3 main_pretrain.py \
     --solarization_prob 0.0 0.2 \
     --crop_size 32 \
     --num_crops_per_aug 1 1 \
-    --name barlow-1000ep-cifar10-resnet20-6x-1x-cl-symm-distill-log-alpha0.95-loss-iter196 \
+    --wandb \
+    --name barlow-1000ep-cifar10-resnet20-6x-1x-cl-symm-distill-bt-alpha0.95-loss-iter1000 \
     --entity jmeng15 \
-    --project light-ssl \
+    --project light-ssl-arxiv \
     --save_checkpoint \
     --method barlow_twins \
     --proj_hidden_dim 2048 \

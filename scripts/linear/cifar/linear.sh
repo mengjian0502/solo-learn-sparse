@@ -1,4 +1,4 @@
-export CUDA_VISIBLE_DEVICES=1
+export CUDA_VISIBLE_DEVICES=0
 
 python3 main_linear.py \
     --dataset cifar10 \
@@ -16,9 +16,9 @@ python3 main_linear.py \
     --weight_decay 0 \
     --batch_size 128 \
     --num_workers 10 \
-    --pretrained_feature_extractor /home/jmeng15/solo-learn-sparse/trained_models/barlow_twins/2k2jbybn/barlow-1000ep-cifar10-resnet20-6x-1x-cl-symm-distill-bt-alpha0.9-loss-2k2jbybn-ep=999.ckpt \
-    --name barlow-1000ep-cifar10-resnet20-6x-1x-cl-symm-distill-bt-alpha0.9-loss-linear \
+    --pretrained_feature_extractor /home/mengjian/Desktop/ASU_research/solo-learn-sparse/trained_models/barlow_twins/ky6z27z3/barlow-1000ep-cifar10-resnet20-6x-1x-cl-symm-distill-bt-alpha0.95-loss-iter1000-ky6z27z3-ep=999.ckpt \
+    --name barlow-1000ep-cifar10-resnet20-6x-1x-cl-symm-distill-bt-alpha0.95-loss-iter195-linear \
     --entity jmeng15 \
-    --project light-ssl \
+    --project light-ssl-arxiv \
     --wandb \
     --save_checkpoint \

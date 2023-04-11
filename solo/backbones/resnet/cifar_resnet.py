@@ -78,7 +78,7 @@ class CifarResNet(nn.Module):
     self.num_classes = num_classes
     self.conv_1_3x3 = SparsConv2d(3, 16*self.inflate, kernel_size=3, stride=1, padding=1, bias=False)
     self.relu0 = nn.ReLU(inplace=True)
-    self.bn_1 = SparseBatchNorm2d(16*self.inflate)
+    self.bn_1 = nn.BatchNorm2d(16*self.inflate)
 
     self.inplanes = 16 * self.inflate 
     self.stage_1 = self._make_layer(block, 16*self.inflate, layer_blocks, 1)

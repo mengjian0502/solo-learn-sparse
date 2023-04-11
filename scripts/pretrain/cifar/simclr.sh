@@ -25,12 +25,12 @@ python3 main_pretrain.py \
     --gaussian_prob 0.0 0.0 \
     --crop_size 32 \
     --num_crops_per_aug 1 1 \
-    --name simclr-1000ep-cifar10-resnet20-4x-1x-cl-interval1000-run2 \
+    --name simclr-1000ep-cifar10-resnet20-4x-1x-cl-interval1000 \
     --interval 1000 \
+    --wandb \
     --entity jmeng15 \
-    --project light-ssl \
+    --project light-ssl-arxiv \
     --save_checkpoint \
-    --auto_resume \
     --method simclr \
     --temperature 0.2 \
     --proj_hidden_dim 2048 \

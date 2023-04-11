@@ -120,7 +120,7 @@ class Slicer(object):
         #                 m.prune_flag = True
         #         self.prune_flag = True
 
-        if self.steps >= 10 * (self.train_steps) and self.steps % self.prune_every_k_steps == 0:
+        if self.steps >= 1 * (self.train_steps) and self.steps % self.prune_every_k_steps == 0:
             print("Update mask @ Step {}".format(self.steps))
             self.prune()
             self.apply_masks()
