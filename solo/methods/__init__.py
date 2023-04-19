@@ -37,6 +37,7 @@ from solo.methods.swav import SwAV
 from solo.methods.vibcreg import VIbCReg
 from solo.methods.vicreg import VICReg
 from solo.methods.wmse import WMSE
+from solo.methods.barlow_acl import BarlowACL
 
 METHODS = {
     # base classes
@@ -44,6 +45,7 @@ METHODS = {
     "linear": LinearModel,
     # methods
     "barlow_twins": BarlowTwins,
+    "barlow_acl": BarlowACL,
     "byol": BYOL,
     "deepclusterv2": DeepClusterV2,
     "dino": DINO,
@@ -64,6 +66,7 @@ METHODS = {
 }
 __all__ = [
     "BarlowTwins",
+    "BarlowACL", 
     "BYOL",
     "BaseMethod",
     "DeepClusterV2",
