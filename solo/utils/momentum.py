@@ -106,6 +106,10 @@ class ParamCopier:
 
         for op, mp in zip(online_net.parameters(), momentum_net.parameters()):
             mp.data = op.data
+
+        for om, pm in zip(online_net.modules(), momentum_net.modules()):
+            if hasattr(om, "prune_flag"):
+                pm.mask.data = om.mask.data
     
     def update_tau(self, cur_step: int, max_steps: int):
         """Placeholder function.

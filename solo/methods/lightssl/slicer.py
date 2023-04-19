@@ -85,23 +85,13 @@ class Slicer(object):
         return mask.mean([1,2,3])
 
     def prune(self):
-        nbn = 0
         for n, m in self.model.named_modules():
             if isinstance(m, nn.Conv2d) and hasattr(m, "mask"):
                 weight = m.weight.data
                 mask_ = self.filter_prune(weight)
-                if weight.size(1) > 3:
-                    mask_ = self.channel_prune(weight, mask_)
-                
+
                 # update mask
                 self.masks[n] = mask_
-                
-                # bn mask
-                bnm = self.reduce(mask_)
-                self.bn_masks.append(bnm)
-            elif isinstance(m, nn.BatchNorm2d) and hasattr(m, "prune_flag"):
-                m.mask.data = self.bn_masks[nbn].cuda()
-                nbn += 1
                 
         
     def apply_masks(self):

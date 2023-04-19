@@ -273,10 +273,11 @@ class BaseMethod(pl.LightningModule):
             # remove fc layer
             self.backbone.fc = nn.Identity()
             if cifar:
-                self.backbone.conv1 = nn.Conv2d(
-                    3, 64, kernel_size=3, stride=1, padding=2, bias=False
-                )
-                self.backbone.maxpool = nn.Identity()
+                if not "resnet20" in self.backbone_name:
+                    self.backbone.conv1 = nn.Conv2d(
+                        3, 64, kernel_size=3, stride=1, padding=2, bias=False
+                    )
+                    self.backbone.maxpool = nn.Identity()
         else:
             self.backbone.fc = nn.Identity()
             self.features_dim = self.backbone.last_channel

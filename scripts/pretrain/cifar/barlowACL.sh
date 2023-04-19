@@ -1,11 +1,13 @@
 xdistll=True
 distype="log"
 llamb=1e-4
+alpha=0.95
+width=0.167
 
-export CUDA_VISIBLE_DEVICES=1
+export CUDA_VISIBLE_DEVICES=0
 python3 main_pretrain.py \
     --dataset cifar10 \
-    --backbone resnet20 \
+    --backbone resnet20_6x \
     --train_data_path ./datasets \
     --val_data_path ./datasets \
     --max_epochs 1000 \
@@ -30,7 +32,7 @@ python3 main_pretrain.py \
     --crop_size 32 \
     --num_crops_per_aug 1 1 \
     --wandb \
-    --name barlow-acl-1000ep-cifar10-resnet20-xdistill${xdistll}-${distype}-lamb${llamb} \
+    --name barlow-acl-1000ep-cifar10-resnet20-6x-1x-xdistill${xdistll}-${distype}-lamb${llamb}-alpha${alpha} \
     --entity jmeng15 \
     --project light-ssl-acl \
     --save_checkpoint \
@@ -40,3 +42,5 @@ python3 main_pretrain.py \
     --scale_loss 0.1 \
     --xdistill ${xdistll} \
     --distype ${distype} \
+    --alpha ${alpha} \
+    --width ${width} \
