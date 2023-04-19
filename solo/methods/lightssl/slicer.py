@@ -113,13 +113,6 @@ class Slicer(object):
     def step(self):
         self.steps += 1
 
-        # if not self.prune_flag:
-        #     if self.steps > self.train_steps:
-        #         for m in self.model.modules():
-        #             if hasattr(m, "prune_flag"):
-        #                 m.prune_flag = True
-        #         self.prune_flag = True
-
         if self.steps >= 1 * (self.train_steps) and self.steps % self.prune_every_k_steps == 0:
             print("Update mask @ Step {}".format(self.steps))
             self.prune()

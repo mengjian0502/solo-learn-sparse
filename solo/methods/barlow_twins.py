@@ -58,8 +58,8 @@ class BarlowTwins(BaseMethod):
 
         # slicer
         self.train_steps = args.train_steps
-        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=args.train_steps, scale=0.167)
-        self.alpha = 0.95
+        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=args.train_steps, scale=self.extra_args['width'])
+        self.alpha = self.extra_args['alpha']
 
     @staticmethod
     def add_model_specific_args(parent_parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -123,13 +123,9 @@ class BarlowTwins(BaseMethod):
         # check that we received the desired number of crops
         assert len(X) == self.num_crops
 
-        # outs = [self.base_training_step(x, targets) for x in X[: self.num_large_crops]]
         
         outs = []
         for i, x in enumerate(X[: self.num_large_crops]):
-            # # switch
-            # s = i % self.num_large_crops
-            # self.backbone.switch(s)
 
             # forward pass
             out = self.base_training_step(x, targets)

@@ -384,9 +384,10 @@ class BaseMethod(pl.LightningModule):
         parser.add_argument('--N', type=int, default=2, metavar='N', help='Group size')
         parser.add_argument("--duomask", type=str2bool, nargs='?', const=True, default=False, help="Duo mask for SSL with shared encoders")
 
-        # model slicer
+        # model slicer (for light-weight ssl)
         parser.add_argument('--width', default=0.25, type=float, help='model width scaler')
         parser.add_argument('--interval', default=1000, type=float, help='mask update interval')
+        parser.add_argument('--alpha', default=0.95, type=float, help='loss weight between distill and CL loss')
         return parent_parser
 
     @property
