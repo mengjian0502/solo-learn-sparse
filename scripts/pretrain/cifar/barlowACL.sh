@@ -1,4 +1,8 @@
-export CUDA_VISIBLE_DEVICES=0
+xdistll=True
+distype="log"
+llamb=1e-4
+
+export CUDA_VISIBLE_DEVICES=1
 python3 main_pretrain.py \
     --dataset cifar10 \
     --backbone resnet20 \
@@ -26,11 +30,13 @@ python3 main_pretrain.py \
     --crop_size 32 \
     --num_crops_per_aug 1 1 \
     --wandb \
-    --name barlow-acl-1000ep-cifar10-resnet20 \
+    --name barlow-acl-1000ep-cifar10-resnet20-xdistill${xdistll}-${distype}-lamb${llamb} \
     --entity jmeng15 \
     --project light-ssl-acl \
     --save_checkpoint \
     --method barlow_acl \
     --proj_hidden_dim 2048 \
     --proj_output_dim 2048 \
-    --scale_loss 0.1
+    --scale_loss 0.1 \
+    --xdistill ${xdistll} \
+    --distype ${distype} \

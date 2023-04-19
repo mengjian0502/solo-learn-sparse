@@ -388,6 +388,9 @@ class BaseMethod(pl.LightningModule):
         parser.add_argument('--width', default=0.25, type=float, help='model width scaler')
         parser.add_argument('--interval', default=1000, type=float, help='mask update interval')
         parser.add_argument('--alpha', default=0.95, type=float, help='loss weight between distill and CL loss')
+        parser.add_argument("--xdistill", type=str2bool, nargs='?', const=True, default=False, help="Enable cross distillation")
+        parser.add_argument('--distype', default="copy", type=str, help='type of the distillation loss')
+        parser.add_argument('--loglamb', default=1e-4, type=float, help='regularization parameter of log-base distillation loss')
         return parent_parser
 
     @property

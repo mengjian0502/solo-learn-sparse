@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 from typing import Any, Dict, List, Sequence, Tuple
 
-from solo.losses.barlow import barlow_loss_func
+from solo.losses.barlow import barlow_loss_func, distill_loss_func
 from solo.methods.base import BaseMethod, BaseMomentumMethod
 from solo.methods.lightssl import Slicer
 from solo.utils.momentum import initialize_momentum_params, ParamCopier
@@ -45,6 +45,9 @@ class BarlowACL(BaseMomentumMethod):
         # No momentume update, directly copy
         self.momentum_updater = ParamCopier()
 
+        # cross distillation
+        self.alpha = self.extra_args['alpha']
+        self.llamb = self.extra_args['loglamb']
         
     @staticmethod
     def add_model_specific_args(parent_parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -163,7 +166,20 @@ class BarlowACL(BaseMomentumMethod):
         loss21 = barlow_loss_func(q2, k1, lamb=self.lamb, scale_loss=self.scale_loss)
         barlow_loss = (loss12 + loss21) / 2
 
-        return barlow_loss + class_loss
+
+        # cross distillation
+        if self.extra_args['distype'] == "copy":
+            ds12 = barlow_loss_func(q1, k1, lamb=self.lamb, scale_loss=self.scale_loss)
+            ds21 = barlow_loss_func(q2, k2, lamb=self.lamb, scale_loss=self.scale_loss)
+            ds_loss = (ds12 + ds21) / 2
+            loss = self.alpha * barlow_loss + (1-self.alpha) * ds_loss
+        elif self.extra_args['distype'] == "log":
+            ds12 = distill_loss_func(t=k1, s=q1, scale_loss=self.scale_loss)
+            ds21 = distill_loss_func(t=k2, s=q2, scale_loss=self.scale_loss)
+            ds_loss = (ds12 + ds21) / 2
+            loss = barlow_loss + ds_loss.mul(self.llamb)        
+
+        return loss + class_loss
 
 
     def on_train_batch_end(self, outputs: Dict[str, Any], batch: Sequence[Any], batch_idx: int):
