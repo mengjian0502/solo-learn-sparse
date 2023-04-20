@@ -49,14 +49,6 @@ class BarlowACL(BaseMomentumMethod):
         self.alpha = self.extra_args['alpha']
         self.llamb = self.extra_args['loglamb']
         
-        # slicer
-        self.slicer = Slicer(model=self.backbone, train_steps=args.train_steps, interval=1000, scale=self.extra_args['width'])
-
-        # reset to dense before training
-        for m in self.backbone.modules():
-            if hasattr(m, "prune_flag"):
-                m.prune_flag = False
-        
     @staticmethod
     def add_model_specific_args(parent_parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         parent_parser = super(BarlowACL, BarlowACL).add_model_specific_args(parent_parser)
@@ -126,87 +118,16 @@ class BarlowACL(BaseMomentumMethod):
         out.update({"z": z})
         return out
     
-    def online_step(self, batch: List[Any], batch_idx: int) -> Dict[str, Any]:
-        """Training step for pytorch lightning. It does all the shared operations, such as
-        forwarding the crops, computing logits and computing statistics.
-
-        Args:
-            batch (List[Any]): a batch of data in the format of [img_indexes, [X], Y], where
-                [X] is a list of size self.num_crops containing batches of images.
-            batch_idx (int): index of the batch.
-
-        Returns:
-            Dict[str, Any]: dict with the classification loss, features and logits.
-        """
-
-        _, X, targets = batch
-
-        X = [X] if isinstance(X, torch.Tensor) else X
-
-        # check that we received the desired number of crops
-        assert len(X) == self.num_crops
-        
-        outs = []
-        for i, x in enumerate(X[: self.num_large_crops]):
-            if i == 0:
-                self.slicer.remove_mask()
-            else:
-                self.slicer.activate_mask()
-
-            # forward pass
-            out = self.base_training_step(x, targets)
-            outs.append(out)
-
-        outs = {k: [out[k] for out in outs] for k in outs[0].keys()}
-
-        if self.multicrop:
-            multicrop_outs = [self.multicrop_forward(x) for x in X[self.num_large_crops :]]
-            for k in multicrop_outs[0].keys():
-                outs[k] = outs.get(k, []) + [out[k] for out in multicrop_outs]
-
-        # loss and stats
-        outs["loss"] = sum(outs["loss"]) / self.num_large_crops
-        outs["acc1"] = sum(outs["acc1"]) / self.num_large_crops
-        outs["acc5"] = sum(outs["acc5"]) / self.num_large_crops
-
-        metrics = {
-            "train_class_loss": outs["loss"],
-            "train_acc1": outs["acc1"],
-            "train_acc5": outs["acc5"],
-        }
-
-        self.log_dict(metrics, on_epoch=True, sync_dist=True)
-
-        if self.knn_eval:
-            targets = targets.repeat(self.num_large_crops)
-            mask = targets != -1
-            self.knn(
-                train_features=torch.cat(outs["feats"][: self.num_large_crops])[mask].detach(),
-                train_targets=targets[mask],
-            )
-
-        return outs
-
-
     def training_step(self, batch: List[Any], batch_idx: int) -> Dict[str, Any]:
+        outs = super().training_step(batch, batch_idx)
 
-        outs = self.online_step(batch, batch_idx)
-    
         _, X, targets = batch
         X = [X] if isinstance(X, torch.Tensor) else X
 
         # remove small crops
         X = X[: self.num_large_crops]
 
-        momentum_outs = []
-        for i, x in enumerate(X):
-            if i == 0:
-                self.slicer.activate_mask()
-            else:
-                self.slicer.remove_mask()
-            mout = self._shared_step_momentum(x, targets)
-            momentum_outs.append(mout)
-
+        momentum_outs = [self._shared_step_momentum(x, targets) for x in X]
         momentum_outs = {
             "momentum_" + k: [out[k] for out in momentum_outs] for k in momentum_outs[0].keys()
         }
@@ -241,27 +162,25 @@ class BarlowACL(BaseMomentumMethod):
         k1, k2 = outs["momentum_z"]
 
         # compute the barlow loss
-        loss12 = barlow_loss_func(q1, q2, lamb=self.lamb, scale_loss=self.scale_loss)   # CL loss between Dense encoders
-        # loss21 = barlow_loss_func(q2, k1, lamb=self.lamb, scale_loss=self.scale_loss)   # CL loss between sparse encoders
-        barlow_loss = loss12
+        loss12 = barlow_loss_func(q1, k2, lamb=self.lamb, scale_loss=self.scale_loss)
+        loss21 = barlow_loss_func(q2, k1, lamb=self.lamb, scale_loss=self.scale_loss)
+        barlow_loss = (loss12 + loss21) / 2
 
-        self.log("train_barlow_loss", barlow_loss, on_epoch=True, sync_dist=True)
 
         # cross distillation
         if self.extra_args['distype'] == "copy":
             ds12 = barlow_loss_func(q1, k1, lamb=self.lamb, scale_loss=self.scale_loss)
             ds21 = barlow_loss_func(q2, k2, lamb=self.lamb, scale_loss=self.scale_loss)
             ds_loss = (ds12 + ds21) / 2
-            # loss = self.alpha * barlow_loss + (1-self.alpha) * ds_loss
-            loss = barlow_loss + ds_loss.mul(self.llamb)
+            loss = self.alpha * barlow_loss + (1-self.alpha) * ds_loss
         elif self.extra_args['distype'] == "log":
             ds12 = distill_loss_func(t=k1, s=q1, scale_loss=self.scale_loss)
             ds21 = distill_loss_func(t=k2, s=q2, scale_loss=self.scale_loss)
             ds_loss = (ds12 + ds21) / 2
             loss = barlow_loss + ds_loss.mul(self.llamb)        
 
-        self.prune_step()
         return loss + class_loss
+
 
     def on_train_batch_end(self, outputs: Dict[str, Any], batch: Sequence[Any], batch_idx: int):
 
@@ -269,14 +188,4 @@ class BarlowACL(BaseMomentumMethod):
         momentum_pairs = self.momentum_pairs
         for mp in momentum_pairs:
             self.momentum_updater.update(*mp)
-
-    def prune_step(self):
-        self.slicer.step()
-        s, _ = self.slicer.get_sparsity()
-        metrics = {"sparsity": s}
-
-        self.log_dict(metrics, on_epoch=True, sync_dist=True)
-    
-    def validation_step(self, batch: List[torch.Tensor], batch_idx: int, dataloader_idx: int = None):
-        self.slicer.activate_mask()
-        return super().validation_step(batch, batch_idx, dataloader_idx)
+            
