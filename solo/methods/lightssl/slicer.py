@@ -112,11 +112,15 @@ class Slicer(object):
         for m in self.model.modules():
             if hasattr(m, "prune_flag"):
                 m.prune_flag = False
+            elif hasattr(m, "_switch"):
+                m._switch(0)
 
     def activate_mask(self):
         for m in self.model.modules():
             if hasattr(m, "prune_flag"):
                 m.prune_flag = True
+            elif hasattr(m, "_switch"):
+                m._switch(1)
 
     def get_sparsity(self):
         total = 0

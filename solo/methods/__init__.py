@@ -38,6 +38,7 @@ from solo.methods.vibcreg import VIbCReg
 from solo.methods.vicreg import VICReg
 from solo.methods.wmse import WMSE
 from solo.methods.barlow_acl import BarlowACL
+from solo.methods.barlow_vanilla import BarlowTwinsVanilla
 
 METHODS = {
     # base classes
@@ -46,6 +47,7 @@ METHODS = {
     # methods
     "barlow_twins": BarlowTwins,
     "barlow_acl": BarlowACL,
+    "barlow_vanilla": BarlowTwinsVanilla,
     "byol": BYOL,
     "deepclusterv2": DeepClusterV2,
     "dino": DINO,

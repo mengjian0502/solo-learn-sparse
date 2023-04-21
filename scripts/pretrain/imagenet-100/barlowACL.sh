@@ -1,4 +1,4 @@
-xdistll=True
+xdistll=False
 distype="copy"
 llamb=1e-4
 alpha=0.95
@@ -34,7 +34,7 @@ python3 main_pretrain.py \
     --gaussian_prob 1.0 0.1 \
     --solarization_prob 0.0 0.2 \
     --num_crops_per_aug 1 1 \
-    --name barlow-400ep-imagenet100-mobilenetv1-1x-1x-alpha0.95-xdistill${xdistll}-${distype}-lamb${llamb}-alpha${alpha} \
+    --name barlow-400ep-imagenet100-mobilenetv1-1x-1x-alpha0.95-xdistill${xdistll}-${distype}-lamb${llamb}-alpha${alpha}-online-loss-only \
     --wandb \
     --entity jmeng15 \
     --project light-ssl-acl \
